@@ -1,0 +1,31 @@
+[project]
+name = "knowledge-agent"
+version = "0.2.0"
+description = "Minimal knowledge agent skeleton with Rich TUI and paimonsdk(main-v2) adapter"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "rich>=13.7.0",
+  "python-dotenv>=1.0.1",
+]
+
+[project.optional-dependencies]
+llm = ["openai>=2.31.0"]
+test = ["pytest>=8.2.0"]
+
+[project.scripts]
+knowledge-agent = "knowledge_agent.runtime.tui:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+addopts = "-q"

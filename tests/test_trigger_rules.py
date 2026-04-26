@@ -1,13 +1,22 @@
-from __future__ import annotations
-
-from knowledge_agent.domain.enums import TriggerType
-from knowledge_agent.domain.models import Claim, RetrievedClaim
-from knowledge_agent.retrieval.trigger_rules import TriggerRules
+from knowledgeag_card.domain.models import KnowledgeCard, RetrievedCard, utcnow
+from knowledgeag_card.retrieval.trigger_rules import TriggerRules
 
 
-def test_code_task_trigger() -> None:
+def test_trigger_rules():
+    card = KnowledgeCard(
+        card_id='c1',
+        title='t',
+        card_type='knowledge',
+        summary='s',
+        applicable_contexts=['ctx'],
+        core_points=['a', 'b', 'c'],
+        practice_rules=[],
+        anti_patterns=[],
+        claim_ids=['cl1'],
+        evidence_ids=['ev1'],
+        tags=['tag'],
+        updated_at=utcnow(),
+    )
     rules = TriggerRules()
-    claim = Claim(claim_id="1", text="代码片段涉及：AgentLoop、ValidationService", evidence_ids=["e1"])
-    retrieved = [RetrievedClaim(claim=claim, score=0.8)]
-    triggers = rules.evaluate("帮我修改这个 python 代码实现", retrieved)
-    assert TriggerType.CODE_TASK in triggers
+    triggers = rules.evaluate('请给我原文依据和代码配置说明', [RetrievedCard(card=card, score=0.9)])
+    assert triggers

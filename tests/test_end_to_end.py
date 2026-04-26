@@ -1,21 +1,70 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
-from knowledge_agent.app.config import AppConfig
-from knowledge_agent.app.container import AppContainer
+from knowledgeag_card.runtime.agent_app import AgentApp
 
 
-def test_ingest_and_ask(tmp_path: Path) -> None:
-    raw = tmp_path / "note.md"
-    raw.write_text("# 核心\n系统中心是 Claim / Evidence / Source。\n", encoding="utf-8")
+def write_files(tmp_path: Path):
+    (tmp_path / '.env').write_text('', encoding='utf-8')
+    (tmp_path / 'config.json').write_text(
+        json.dumps(
+            {
+                'storage': {'db_path': str(tmp_path / 'knowledgeag.sqlite3')},
+                'models': {
+                    'mode': 'mock',
+                    'providers': {
+                        'mock_provider': {
+                            'baseUrl': '',
+                            'api': 'openai-completions',
+                            'apiKeyEnv': 'QWEN_API_KEY',
+                            'models': [{'id': 'mock', 'name': 'Mock'}],
+                        }
+                    },
+                },
+                'temperature': 0.2,
+                'retrieval': {'top_k_cards': 5, 'top_k_claims': 8},
+                'ingest': {
+                    'whole_document_ratio': 0.7,
+                    'section_split_min_headings': 3,
+                    'max_claims_per_unit': 5,
+                    'text_evidence_window_chars': 220,
+                    'code_evidence_window_lines': 12,
+                    'drop_unaligned_claims': True,
+                },
+                'system_prompts': {'answer': 'a', 'claim_extraction': 'b', 'card_organization': 'c'},
+            },
+            ensure_ascii=False,
+        ),
+        encoding='utf-8',
+    )
+    (tmp_path / 'sample.md').write_text(
+        '''# AI Coding 模块化
 
-    config = AppConfig(project_root=tmp_path, db_path=tmp_path / "knowledge.db", top_k=5)
-    container = AppContainer(config=config)
-    results = container.ingest_service.ingest_path(raw)
+AI Coding 时代，模块化设计的目标不是架构漂亮，而是把变化限制在预期边界内。
 
+Facade 适合收口外部复杂系统。
+
+Adapter 适合隔离外部接口差异。
+
+Strategy 适合可替换算法。
+''',
+        encoding='utf-8',
+    )
+
+
+def test_end_to_end(tmp_path, monkeypatch):
+    monkeypatch.delenv('QWEN_API_KEY', raising=False)
+    monkeypatch.delenv('KNOWLEDGEAG_RUNTIME', raising=False)
+    write_files(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    app = AgentApp.create()
+    assert app.backend_name == 'mock'
+    results = app.ingest(tmp_path / 'sample.md')
     assert len(results) == 1
-    assert len(results[0].claims) >= 1
-
-    answer = container.agent_loop.ask("系统中心是什么？")
-    assert "Claim" in answer or "系统中心" in answer
+    result = results[0]
+    assert result.claims
+    assert result.cards
+    answer = app.ask('AI Coding 中如何控制变更半径？')
+    assert answer

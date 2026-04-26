@@ -1,9 +1,12 @@
 {
+  "storage": {
+    "db_path": "data/storage/knowledgeag.sqlite3"
+  },
   "models": {
     "mode": "qwen3.5-plus",
     "providers": {
       "qwen": {
-        "baseUrl": "https://coding.dashscope.aliyuncs.com/v1",
+        "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
         "api": "openai-completions",
         "apiKeyEnv": "QWEN_API_KEY",
         "models": [
@@ -33,5 +36,24 @@
         ]
       }
     }
+  },
+  "temperature": 0.2,
+  "max_tokens": 2048,
+  "retrieval": {
+    "top_k_cards": 5,
+    "top_k_claims": 8
+  },
+  "ingest": {
+    "whole_document_ratio": 0.7,
+    "section_split_min_headings": 3,
+    "max_claims_per_unit": 5,
+    "text_evidence_window_chars": 260,
+    "code_evidence_window_lines": 18,
+    "drop_unaligned_claims": true
+  },
+  "system_prompts": {
+    "answer": "你是一个知识库问答助手。先基于知识卡回答；命中依据、冲突、不确定、代码/API/配置/约束问题时，要结合 claim 和 evidence，明确引用来源位置。",
+    "claim_extraction": "你是知识接入阶段的 ClaimDraft 提取器。你的任务是从给定 source 或 read unit 中抽取可复用的原子判断，并提供可定位原文的 evidence anchors。只返回 JSON。",
+    "card_organization": "你是知识卡组织器。你的任务是把一组 claims 整理成少量可复用 KnowledgeCard。每张卡只围绕一个明确主题，包含 3-7 个核心点和一组相对一致的适用场景。只返回 JSON。"
   }
 }

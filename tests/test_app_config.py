@@ -4,188 +4,95 @@ import json
 from pathlib import Path
 
 import pytest
-from knowledge_agent.app.config import AppConfig
+
+from knowledgeag_card.app.config import AppConfig
 
 
-def _write_env(tmp_path: Path, *lines: str) -> None:
-    (tmp_path / ".env").write_text(
-        "\n".join(("APP_LLM_BACKEND=paimonsdk", *lines)),
-        encoding="utf-8",
-    )
+@pytest.fixture(autouse=True)
+def clean_runtime_env(monkeypatch):
+    monkeypatch.delenv('KNOWLEDGEAG_RUNTIME', raising=False)
 
 
-def _write_config(tmp_path: Path, payload: dict) -> None:
-    (tmp_path / "config.json").write_text(
-        json.dumps(payload),
-        encoding="utf-8",
-    )
+def write_config(tmp_path: Path, config: dict, env: str = '') -> None:
+    (tmp_path / '.env').write_text(env, encoding='utf-8')
+    (tmp_path / 'config.json').write_text(json.dumps(config, ensure_ascii=False), encoding='utf-8')
 
 
-def test_default_reads_llm_connection_from_nested_config_json(tmp_path: Path, monkeypatch) -> None:
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    _write_env(tmp_path, "OPENAI_API_KEY=test-key")
-    _write_config(
-        tmp_path,
-        {
-            "models": {
-                "mode": "qwen3.5-plus",
-                "providers": {
-                    "qwen": {
-                        "baseUrl": "https://coding.dashscope.aliyuncs.com/v1",
-                        "api": "openai-completions",
-                        "apiKeyEnv": "QWEN_API_KEY",
-                        "models": [{"id": "qwen3.5-plus"}],
-                    },
-                    "moonshot": {
-                        "baseUrl": "https://api.kimi.com/coding/v1",
-                        "api": "openai-responses",
-                        "models": [{"id": "kimi-k2.6"}],
-                    },
+def base_config() -> dict:
+    return {
+        'storage': {'db_path': 'test.sqlite3'},
+        'models': {
+            'mode': 'qwen3.5-plus',
+            'providers': {
+                'qwen': {
+                    'baseUrl': 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+                    'api': 'openai-completions',
+                    'apiKeyEnv': 'QWEN_API_KEY',
+                    'models': [
+                        {
+                            'id': 'qwen3.5-plus',
+                            'name': 'qwen3.5-plus',
+                            'reasoning': False,
+                            'input': ['text', 'image'],
+                            'contextWindow': 8096,
+                            'maxTokens': 65536,
+                        }
+                    ],
                 },
-            }
-        },
-    )
-
-    monkeypatch.chdir(tmp_path)
-    config = AppConfig.default()
-
-    assert config.llm_backend == "paimonsdk"
-    assert config.llm_api_key == "test-key"
-    assert config.llm_api_key_env == "QWEN_API_KEY"
-    assert config.llm_provider == "qwen"
-    assert config.llm_base_url == "https://coding.dashscope.aliyuncs.com/v1"
-    assert config.llm_model == "qwen3.5-plus"
-    assert config.llm_api == "chat.completions"
-
-
-def test_default_normalizes_responses_aliases(tmp_path: Path, monkeypatch) -> None:
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    _write_env(tmp_path, "OPENAI_API_KEY=test-key")
-    _write_config(
-        tmp_path,
-        {
-            "models": {
-                "mode": "kimi-k2.6",
-                "providers": {
-                    "moonshot": {
-                        "baseUrl": "https://api.kimi.com/coding/v1",
-                        "api": "response",
-                        "apiKeyEnv": "MOONSHOT_API_KEY",
-                        "models": [{"id": "kimi-k2.6"}],
-                    }
+                'moonshot': {
+                    'baseUrl': 'https://api.kimi.com/coding/v1',
+                    'api': 'openai-completions',
+                    'apiKeyEnv': 'MOONSHOT_API_KEY',
+                    'models': [{'id': 'kimi-k2.6', 'name': 'Kimi K2.6', 'contextWindow': 8096}],
                 },
-            }
+            },
         },
-    )
+        'system_prompts': {'answer': 'a', 'claim_extraction': 'b', 'card_organization': 'c'},
+    }
 
+
+def test_loads_selected_model_from_models_registry(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    config = AppConfig.default()
+    monkeypatch.delenv('QWEN_API_KEY', raising=False)
+    write_config(tmp_path, base_config())
 
-    assert config.llm_provider == "moonshot"
-    assert config.llm_api_key_env == "MOONSHOT_API_KEY"
-    assert config.llm_base_url == "https://api.kimi.com/coding/v1"
-    assert config.llm_model == "kimi-k2.6"
-    assert config.llm_api == "responses"
+    config = AppConfig.load()
+
+    assert config.model.id == 'qwen3.5-plus'
+    assert config.model.name == 'qwen3.5-plus'
+    assert config.model.provider == 'qwen'
+    assert config.model.base_url == 'https://dashscope.aliyuncs.com/compatible-mode/v1'
+    assert config.model.input_modalities == ('text', 'image')
+    assert config.model.context_window == 8096
+    assert config.model.max_tokens == 65536
 
 
-def test_default_uses_chat_when_provider_api_is_missing(tmp_path: Path, monkeypatch) -> None:
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    _write_env(tmp_path, "OPENAI_API_KEY=test-key")
-    _write_config(
-        tmp_path,
-        {
-            "models": {
-                "mode": "qwen3.5-plus",
-                "providers": {
-                    "qwen": {
-                        "baseUrl": "https://coding.dashscope.aliyuncs.com/v1",
-                        "models": [{"id": "qwen3.5-plus"}],
-                    }
-                },
-            }
-        },
-    )
-
+def test_loads_provider_api_key_from_selected_env_var(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    config = AppConfig.default()
+    monkeypatch.delenv('QWEN_API_KEY', raising=False)
+    write_config(tmp_path, base_config(), env='QWEN_API_KEY=test-key\n')
 
-    assert config.llm_api_key_env is None
-    assert config.llm_api == "chat.completions"
+    config = AppConfig.load()
+
+    assert config.api_key == 'test-key'
+    assert config.runtime_backend == 'paimon'
 
 
-def test_default_raises_when_mode_has_no_matching_model(tmp_path: Path, monkeypatch) -> None:
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    _write_env(tmp_path, "OPENAI_API_KEY=test-key")
-    _write_config(
-        tmp_path,
-        {
-            "models": {
-                "mode": "missing-model",
-                "providers": {
-                    "qwen": {
-                        "baseUrl": "https://coding.dashscope.aliyuncs.com/v1",
-                        "api": "chat",
-                        "models": [{"id": "qwen3.5-plus"}],
-                    }
-                },
-            }
-        },
-    )
-
+def test_maps_openai_completions_to_paimon_api(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    with pytest.raises(ValueError, match="没有匹配到任何"):
-        AppConfig.default()
+    monkeypatch.delenv('QWEN_API_KEY', raising=False)
+    write_config(tmp_path, base_config())
+
+    config = AppConfig.load()
+
+    assert config.model.api == 'chat.completions'
 
 
-def test_default_raises_when_mode_matches_multiple_models(tmp_path: Path, monkeypatch) -> None:
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    _write_env(tmp_path, "OPENAI_API_KEY=test-key")
-    _write_config(
-        tmp_path,
-        {
-            "models": {
-                "mode": "shared-model",
-                "providers": {
-                    "qwen": {
-                        "baseUrl": "https://coding.dashscope.aliyuncs.com/v1",
-                        "api": "chat",
-                        "models": [{"id": "shared-model"}],
-                    },
-                    "moonshot": {
-                        "baseUrl": "https://api.kimi.com/coding/v1",
-                        "api": "responses",
-                        "models": [{"id": "shared-model"}],
-                    },
-                },
-            }
-        },
-    )
-
+def test_unknown_models_mode_raises_value_error(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    with pytest.raises(ValueError, match="匹配到多个模型"):
-        AppConfig.default()
+    config = base_config()
+    config['models']['mode'] = 'missing-model'
+    write_config(tmp_path, config)
 
-
-def test_default_raises_when_provider_api_key_env_is_not_string(tmp_path: Path, monkeypatch) -> None:
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    _write_env(tmp_path, "OPENAI_API_KEY=test-key")
-    _write_config(
-        tmp_path,
-        {
-            "models": {
-                "mode": "qwen3.5-plus",
-                "providers": {
-                    "qwen": {
-                        "baseUrl": "https://coding.dashscope.aliyuncs.com/v1",
-                        "api": "chat",
-                        "apiKeyEnv": {"bad": "value"},
-                        "models": [{"id": "qwen3.5-plus"}],
-                    }
-                },
-            }
-        },
-    )
-
-    monkeypatch.chdir(tmp_path)
-    with pytest.raises(ValueError, match="apiKeyEnv"):
-        AppConfig.default()
+    with pytest.raises(ValueError, match='missing-model'):
+        AppConfig.load()

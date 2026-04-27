@@ -47,19 +47,24 @@ class IngestService:
         results: list[IngestResult] = []
         for target in targets:
             source, text = self.source_loader.load(target)
+            source = self.sources.resolve_for_import(source)
             self.sources.save(source)
+
             read_plan = self.read_planner.plan(source, text, self.model_context_window)
             if read_plan.mode.value == 'structured':
                 read_plan.units = self.structural_splitter.split(source, text)
+
             claim_drafts, summary = self.claim_extractor.extract(source, text, read_plan)
             if summary:
                 source.source_summary = summary
                 self.sources.save(source)
+
             evidences, bindings = self.evidence_aligner.align(source, text, claim_drafts)
             claims = self.claim_builder.build(bindings)
             claims = self.claim_validator.validate(claims)
             cards = self.card_organizer.organize(source, claims)
             cards = self.card_validator.validate(cards)
+
             self.evidences.save_many(evidences)
             self.claims.save_many(claims)
             self.cards.save_many(cards)

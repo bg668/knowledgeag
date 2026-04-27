@@ -11,6 +11,6 @@ class EvidenceFetcher:
 
     def fetch(self, evidence_ids: list[str]):
         evidences = self.evidences.get_by_ids(evidence_ids)
-        source_ids = sorted({e.source_id for e in evidences})
-        sources = [self.sources.get(source_id) for source_id in source_ids]
+        source_refs = sorted({(e.source_id, e.source_version) for e in evidences})
+        sources = [self.sources.get(source_id, version_id) for source_id, version_id in source_refs]
         return evidences, [source for source in sources if source is not None]

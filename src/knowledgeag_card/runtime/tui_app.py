@@ -15,12 +15,12 @@ from knowledgeag_card.runtime.agent_app import AgentApp
 console = Console()
 
 HELP = """
-[bold]Commands[/bold]
-/ingest <path>    导入文件或目录
-/ask <question>   提问
-/stats            查看统计
-/help             查看帮助
-/quit             退出
+[bold]Commands[/bold]\n
+\t/ingest <path>    导入文件或目录\n
+\t/ask <question>   提问\n
+\t/stats            查看统计\n
+\t/help             查看帮助\n
+\t/quit             退出\n
 """
 
 

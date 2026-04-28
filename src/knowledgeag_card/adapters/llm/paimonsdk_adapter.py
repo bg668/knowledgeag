@@ -15,6 +15,40 @@ class PaimonSDKAdapter(BaseLLMAdapter):
         self.config = config
         self._load_runtime()
 
+    def summarize_source(
+        self,
+        *,
+        source_title: str,
+        source_type: str,
+        whole_text: str,
+        read_units: list[ReadUnit],
+        mode: str,
+    ) -> dict:
+        payload = {
+            'source_title': source_title,
+            'source_type': source_type,
+            'mode': mode,
+            'whole_text': whole_text,
+            'read_units': [
+                {
+                    'title': u.title,
+                    'loc_hint': u.loc_hint,
+                    'content': u.content,
+                }
+                for u in read_units
+            ],
+        }
+        prompt = (
+            f"{self.config.prompts.source_summary}\n"
+            "输出 JSON："
+            '{"topic": "...", "core_points": ["..."], "applicable_contexts": ["..."], '
+            '"structure": ["..."]}\n'
+            "约束：概括全文主旨，不替代 KnowledgeCard；不要输出元话语；只返回 JSON。\n"
+            f"输入：{json.dumps(payload, ensure_ascii=False)}"
+        )
+        raw = self._run_once(system_prompt=self.config.prompts.source_summary, user_prompt=prompt)
+        return self._parse_json(raw)
+
     def extract_claim_drafts(
         self,
         *,

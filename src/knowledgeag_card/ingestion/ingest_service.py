@@ -12,6 +12,7 @@ class IngestService:
         source_loader,
         read_planner,
         structural_splitter,
+        source_summarizer,
         claim_extractor,
         evidence_aligner,
         claim_builder,
@@ -28,6 +29,7 @@ class IngestService:
         self.source_loader = source_loader
         self.read_planner = read_planner
         self.structural_splitter = structural_splitter
+        self.source_summarizer = source_summarizer
         self.claim_extractor = claim_extractor
         self.evidence_aligner = evidence_aligner
         self.claim_builder = claim_builder
@@ -54,11 +56,10 @@ class IngestService:
             if read_plan.mode.value == 'structured':
                 read_plan.units = self.structural_splitter.split(source, text)
 
-            claim_drafts, summary = self.claim_extractor.extract(source, text, read_plan)
-            if summary:
-                source.source_summary = summary
-                self.sources.save(source)
+            source.source_summary = self.source_summarizer.summarize(source, text, read_plan)
+            self.sources.save(source)
 
+            claim_drafts, _summary = self.claim_extractor.extract(source, text, read_plan)
             evidences, bindings = self.evidence_aligner.align(source, text, claim_drafts)
             claims = self.claim_builder.build(bindings)
             claims = self.claim_validator.validate(claims)

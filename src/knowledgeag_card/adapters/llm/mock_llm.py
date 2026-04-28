@@ -8,6 +8,29 @@ from knowledgeag_card.domain.models import ClaimDraft, EvidenceAnchor, ReadUnit
 
 
 class MockLLMAdapter(BaseLLMAdapter):
+    def summarize_source(
+        self,
+        *,
+        source_title: str,
+        source_type: str,
+        whole_text: str,
+        read_units: list[ReadUnit],
+        mode: str,
+    ) -> dict:
+        headings = [line.lstrip('#').strip() for line in whole_text.splitlines() if line.startswith('#')]
+        lines = [
+            line.strip()
+            for line in re.split(r'[\n。！？!?]+', whole_text)
+            if line.strip() and not line.strip().startswith('#')
+        ]
+        topic = headings[0] if headings else source_title
+        return {
+            'topic': topic,
+            'core_points': lines[:3] or [topic],
+            'applicable_contexts': [next((line for line in lines if '适用' in line or '用于' in line), lines[0] if lines else topic)],
+            'structure': headings or [unit.title for unit in read_units if unit.title] or [source_title],
+        }
+
     def extract_claim_drafts(
         self,
         *,

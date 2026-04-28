@@ -49,6 +49,7 @@ class RetrievalConfig:
 @dataclass(slots=True)
 class PromptConfig:
     answer: str
+    source_summary: str
     claim_extraction: str
     card_organization: str
 
@@ -105,6 +106,7 @@ class AppConfig:
             ),
             prompts=PromptConfig(
                 answer=prompts.get('answer', '你是一个知识库问答助手。'),
+                source_summary=prompts.get('source_summary', '你是知识接入阶段的 SourceSummary 生成器。'),
                 claim_extraction=prompts.get('claim_extraction', '你是知识接入阶段的 ClaimDraft 提取器。'),
                 card_organization=prompts.get('card_organization', '你是知识卡组织器。'),
             ),

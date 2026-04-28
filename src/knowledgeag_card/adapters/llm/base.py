@@ -8,6 +8,18 @@ from knowledgeag_card.domain.models import ClaimDraft, KnowledgeCard, ReadUnit
 
 class BaseLLMAdapter(ABC):
     @abstractmethod
+    def summarize_source(
+        self,
+        *,
+        source_title: str,
+        source_type: str,
+        whole_text: str,
+        read_units: list[ReadUnit],
+        mode: str,
+    ) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
     def extract_claim_drafts(
         self,
         *,

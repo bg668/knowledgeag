@@ -10,6 +10,7 @@ from knowledgeag_card.ingestion.claim_extractor import ClaimExtractor
 from knowledgeag_card.ingestion.evidence_aligner import EvidenceAligner
 from knowledgeag_card.ingestion.ingest_service import IngestService
 from knowledgeag_card.ingestion.read_planner import ReadPlanner
+from knowledgeag_card.ingestion.source_summarizer import SourceSummarizer
 from knowledgeag_card.ingestion.source_loader import SourceLoader
 from knowledgeag_card.ingestion.structural_splitter import StructuralSplitter
 from knowledgeag_card.retrieval.card_ranker import CardRanker
@@ -48,6 +49,7 @@ class AppContainer:
         self.source_loader = SourceLoader()
         self.read_planner = ReadPlanner(config.ingest)
         self.structural_splitter = StructuralSplitter()
+        self.source_summarizer = SourceSummarizer(self.llm)
         self.claim_extractor = ClaimExtractor(self.llm, config)
         self.evidence_aligner = EvidenceAligner(config.ingest)
         self.claim_builder = ClaimBuilder()
@@ -58,6 +60,7 @@ class AppContainer:
             source_loader=self.source_loader,
             read_planner=self.read_planner,
             structural_splitter=self.structural_splitter,
+            source_summarizer=self.source_summarizer,
             claim_extractor=self.claim_extractor,
             evidence_aligner=self.evidence_aligner,
             claim_builder=self.claim_builder,

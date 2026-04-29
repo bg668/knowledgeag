@@ -1,5 +1,57 @@
 # CHANGE_LOG.md
 
+### 2026-04-30 - 完成基于结构的多 KnowledgeCard 组织
+
+#### 修改目标
+
+完成 REQ-KM-006：让结构化 Source 按标题、章节、主题块生成多张主题 KnowledgeCard，避免长文只保留唯一全文卡。
+
+#### 修改文件
+
+- `src/knowledgeag_card/ingestion/structural_splitter.py`：为结构单元补充稳定的 section/index loc_hint。
+- `src/knowledgeag_card/ingestion/card_organizer.py`：结合 ReadUnit 与 Evidence section 信息组织主题卡，并为缺失章节补充结构卡。
+- `src/knowledgeag_card/ingestion/ingest_service.py`：向 CardOrganizer 传入结构单元和 evidences，不改变接入流程顺序。
+- `src/knowledgeag_card/agents/`、`config.json.example`：扩展 organize_cards 输入，强化结构化多卡 prompt 与 mock 行为。
+- `tests/test_card_organizer.py`、`tests/test_end_to_end.py`、`tests/test_source_summary.py`：验证结构上下文传递、多章节卡生成和测试替身兼容。
+- `docs/PROJECT_CONTEXT.md`、`docs/REQUIREMENTS.md`、`docs/CHANGE_LOG.md`：同步项目地图、需求状态和变更记录。
+
+#### 未修改范围
+
+未修改入口文件、领域模型、SQLite schema、Repository、检索问答流程、配置装配逻辑；未实现 REQ-KM-007/008 的覆盖率检查或粒度控制完整能力。
+
+#### 验证方式
+
+- `uv run pytest tests/test_card_organizer.py tests/test_end_to_end.py -q`
+- `uv run pytest -q`
+- 按 `.agent/skills/code-review/SKILL.md` 对本次 diff 做后置审查。
+
+#### 剩余风险
+
+真实 LLM 仍可能输出不理想的主题划分；当前实现会基于结构信息补足可验证主题卡，但没有引入覆盖率报告或复杂粒度评估。
+
+### 2026-04-30 - 调整 KnowledgeCard 组织需求
+
+#### 修改目标
+
+将 REQ-KM-006、REQ-KM-007、REQ-KM-008 调整为基于结构的多 KnowledgeCard 组织、关键主题覆盖校验和 KnowledgeCard 粒度控制。
+
+#### 修改文件
+
+- `docs/REQUIREMENTS.md`：替换三项需求的名称、背景、描述、验收标准、优先级、影响对象和备注。
+- `docs/CHANGE_LOG.md`：按模板记录本次需求文档调整。
+
+#### 未修改范围
+
+未修改入口文件、主流程、领域模型、配置装配、业务代码、测试代码和其他需求编号。
+
+#### 验证方式
+
+人工核对 `docs/REQUIREMENTS.md` 中 REQ-KM-006 到 REQ-KM-008 的内容与用户描述一致，并检查 Markdown 表格仍保持单行表格格式。
+
+#### 剩余风险
+
+本次只调整需求文档，未实现对应导入、覆盖校验或粒度控制逻辑。
+
 ### 2026-04-29 - Evidence 拆分为 Quote + Context
 
 #### 修改目标

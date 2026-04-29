@@ -77,7 +77,8 @@ AgentApp.ingest
 Source / Evidence / Claim / KnowledgeCard 入库，并返回 IngestResult。
 
 关键原则：
-先读 Source，再抽 ClaimDraft，再用 anchor quote 回原文定位 Evidence，最后聚合为 KnowledgeCard。
+先读 Source，再抽 ClaimDraft，再用 anchor quote 回原文定位 Evidence，最后结合 Source 结构聚合为多张主题 KnowledgeCard。
+结构化长文默认保留章节/主题卡；总览卡可以存在，但不能替代主题卡。
 
 ### 问答流程
 
@@ -337,6 +338,9 @@ SimpleCardIndex
 MarkdownParser    按 Markdown 标题拆分。
 TextParser        按空行块拆分。
 CodeParser        按 Python 风格 def / class 拆分。
+
+当前 KnowledgeCard 组织：
+CardOrganizer     接收 ReadUnit 结构和 Evidence section 信息，优先按标题、章节、主题块组织多张主题卡。
 
 ---
 

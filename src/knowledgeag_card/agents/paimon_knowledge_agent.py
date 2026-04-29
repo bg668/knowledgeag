@@ -105,17 +105,29 @@ class PaimonKnowledgeAgent(KnowledgeAgent):
                 drafts.append(ClaimDraft(text=text, anchors=anchors, confidence=item.get('confidence')))
         return drafts, data.get('summary')
 
-    def organize_cards(self, *, source_title: str, claims: list[str]) -> list[dict]:
-        payload = {'source_title': source_title, 'claims': claims}
+    def organize_cards(
+        self,
+        *,
+        source_title: str,
+        claims: list[str],
+        structure: list[str] | None = None,
+        claim_sections: dict[str, str] | None = None,
+    ) -> list[dict]:
+        payload = {
+            'source_title': source_title,
+            'structure': structure or [],
+            'claims': [{'text': claim, 'section': (claim_sections or {}).get(claim)} for claim in claims],
+        }
         prompt = (
             f"{self.config.prompts.card_organization}\n"
             "输出 JSON："
             '{"cards": [{"title": "...", "card_type": "principle|method|pattern|sop|analysis|knowledge", '
             '"summary": "...", "applicable_contexts": ["..."], "core_points": ["..."], '
             '"practice_rules": ["..."], "anti_patterns": ["..."], "tags": ["..."]}]}\n'
-            "约束：每张卡只围绕一个明确主题；每张卡必须有 3-7 个 core_points；"
-            "长文或 claims 超过 7 条时应拆成多张主题卡；"
-            "core_points 必须来自输入 claims，不要写成文档摘要段落；"
+            "约束：优先按 structure 中的标题、章节、主题块组织主题卡；"
+            "结构化长文不得只输出一张全文总览卡；总览卡可以存在，但不能替代章节/主题卡；"
+            "每张卡只围绕一个明确主题，必须有 3-7 个 core_points；"
+            "core_points 必须逐字来自输入 claims 的 text，不要改写，不要写成文档摘要段落；"
             "没有足够同主题 claims 的内容不要强行成卡。\n"
             f"输入：{json.dumps(payload, ensure_ascii=False)}"
         )

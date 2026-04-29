@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from knowledgeag_card.domain.enums import ClaimStatus, SourceType
-from knowledgeag_card.domain.models import Claim, Source, utcnow
+from knowledgeag_card.domain.models import Claim, Evidence, ReadUnit, Source, utcnow
 from knowledgeag_card.ingestion.card_organizer import CardOrganizer
 
 
@@ -100,11 +100,44 @@ def test_card_organizer_rejects_ambiguous_claim_text_matches():
     assert cards == []
 
 
+def test_card_organizer_passes_structure_context_and_adds_missing_section_cards():
+    claims = [_claim(i) for i in range(6)]
+    evidences = [_evidence(i, 'Facade 边界' if i < 3 else 'Adapter 边界') for i in range(6)]
+    agent = StaticCardAgent([_raw_card('全文总览', claims)])
+    organizer = CardOrganizer(agent)
+
+    cards = organizer.organize(_source(), claims, read_units=_read_units(), evidences=evidences)
+
+    assert agent.structure == ['Facade 边界', 'Adapter 边界']
+    assert agent.claim_sections == {
+        claims[0].text: 'Facade 边界',
+        claims[1].text: 'Facade 边界',
+        claims[2].text: 'Facade 边界',
+        claims[3].text: 'Adapter 边界',
+        claims[4].text: 'Adapter 边界',
+        claims[5].text: 'Adapter 边界',
+    }
+    assert [card.title for card in cards] == ['全文总览', 'Facade 边界', 'Adapter 边界']
+    assert cards[1].claim_ids == [claims[0].claim_id, claims[1].claim_id, claims[2].claim_id]
+    assert cards[2].claim_ids == [claims[3].claim_id, claims[4].claim_id, claims[5].claim_id]
+
+
 class StaticCardAgent:
     def __init__(self, cards: list[dict]) -> None:
         self.cards = cards
+        self.structure: list[str] | None = None
+        self.claim_sections: dict[str, str] | None = None
 
-    def organize_cards(self, *, source_title: str, claims: list[str]) -> list[dict]:
+    def organize_cards(
+        self,
+        *,
+        source_title: str,
+        claims: list[str],
+        structure: list[str] | None = None,
+        claim_sections: dict[str, str] | None = None,
+    ) -> list[dict]:
+        self.structure = structure
+        self.claim_sections = claim_sections
         return self.cards
 
 
@@ -140,3 +173,20 @@ def _raw_card(title: str, claims: list[Claim]) -> dict:
         'anti_patterns': [],
         'tags': ['knowledge'],
     }
+
+
+def _evidence(index: int, section: str) -> Evidence:
+    return Evidence(
+        evidence_id=f'ev_{index}',
+        source_id='src_1',
+        source_version='v1',
+        loc=f'section={section}; chars={index}-{index + 1}',
+        evidence_quote=f'证据 {index}',
+    )
+
+
+def _read_units() -> list[ReadUnit]:
+    return [
+        ReadUnit(unit_id='unit_1', title='Facade 边界', loc_hint='section=Facade 边界; index=1', content=''),
+        ReadUnit(unit_id='unit_2', title='Adapter 边界', loc_hint='section=Adapter 边界; index=2', content=''),
+    ]

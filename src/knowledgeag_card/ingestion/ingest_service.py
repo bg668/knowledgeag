@@ -63,7 +63,7 @@ class IngestService:
             evidences, bindings = self.evidence_aligner.align(source, text, claim_drafts)
             claims = self.claim_builder.build(bindings)
             claims = self.claim_validator.validate(claims)
-            cards = self.card_organizer.organize(source, claims)
+            cards = self.card_organizer.organize(source, claims, read_units=read_plan.units, evidences=evidences)
             cards = self.card_validator.validate(cards)
 
             self.evidences.save_many(evidences)

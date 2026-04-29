@@ -151,7 +151,14 @@ class EmptySummaryLLM:
     ) -> tuple[list[ClaimDraft], str | None]:
         return [], None
 
-    def organize_cards(self, *, source_title: str, claims: list[str]) -> list[dict]:
+    def organize_cards(
+        self,
+        *,
+        source_title: str,
+        claims: list[str],
+        structure: list[str] | None = None,
+        claim_sections: dict[str, str] | None = None,
+    ) -> list[dict]:
         return []
 
     def answer(self, *, prompt: str, on_delta: Callable[[str], None] | None = None) -> str:

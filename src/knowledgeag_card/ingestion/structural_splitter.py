@@ -23,7 +23,12 @@ class StructuralSplitter:
         if not sections:
             return [ReadUnit(unit_id=new_id('unit'), title=source.title, loc_hint='fallback', content=text)]
         return [
-            ReadUnit(unit_id=new_id('unit'), title=title or source.title, loc_hint=title, content=body)
-            for title, body in sections
+            ReadUnit(
+                unit_id=new_id('unit'),
+                title=(title or source.title).strip(),
+                loc_hint=f"section={(title or source.title).strip()}; index={index}",
+                content=body,
+            )
+            for index, (title, body) in enumerate(sections, start=1)
             if body.strip()
         ]

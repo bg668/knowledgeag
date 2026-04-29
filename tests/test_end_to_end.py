@@ -89,7 +89,14 @@ def test_mock_ingest_generates_multiple_themed_cards_for_long_document(tmp_path,
     assert all(evidence.evidence_quote for evidence in result.evidences)
     claim_by_id = {claim.claim_id: claim for claim in result.claims}
     claim_sets = [frozenset(card.claim_ids) for card in result.cards]
+    section_contexts = {
+        context
+        for card in result.cards
+        for context in card.applicable_contexts
+        if context and context != 'general'
+    }
     assert len(claim_sets) == len(set(claim_sets))
+    assert len(section_contexts) > 1
     for card in result.cards:
         assert len(card.core_points) == len(card.claim_ids)
         assert [claim_by_id[claim_id].text for claim_id in card.claim_ids] == card.core_points

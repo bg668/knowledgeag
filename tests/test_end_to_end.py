@@ -68,3 +68,19 @@ def test_end_to_end(tmp_path, monkeypatch):
     assert result.cards
     answer = app.ask('AI Coding 中如何控制变更半径？')
     assert answer
+
+
+def test_mock_ingest_generates_multiple_themed_cards_for_long_document(tmp_path, monkeypatch):
+    monkeypatch.delenv('QWEN_API_KEY', raising=False)
+    monkeypatch.delenv('KNOWLEDGEAG_RUNTIME', raising=False)
+    write_files(tmp_path)
+    fixture_text = (Path(__file__).parent / 'test_data' / 'test_doc.md').read_text(encoding='utf-8')
+    source_path = tmp_path / 'test_doc.md'
+    source_path.write_text(fixture_text, encoding='utf-8')
+    monkeypatch.chdir(tmp_path)
+
+    result = AgentApp.create().ingest(source_path)[0]
+
+    assert len(result.cards) > 1
+    assert all(3 <= len(card.core_points) <= 7 for card in result.cards)
+    assert all(card.claim_ids and card.evidence_ids for card in result.cards)

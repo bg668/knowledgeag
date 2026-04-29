@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from knowledgeag_card.agents.base import KnowledgeAgent
 from knowledgeag_card.domain.models import ReadPlan, Source
 
 
@@ -10,14 +11,14 @@ SUMMARY_FIELDS = ('topic', 'core_points', 'applicable_contexts', 'structure')
 
 
 class SourceSummarizer:
-    def __init__(self, llm) -> None:
-        self.llm = llm
+    def __init__(self, knowledge_agent: KnowledgeAgent) -> None:
+        self.knowledge_agent = knowledge_agent
 
     def summarize(self, source: Source, text: str, read_plan: ReadPlan) -> str:
         if source.source_summary and source.source_summary.strip():
             return source.source_summary
 
-        raw_summary = self.llm.summarize_source(
+        raw_summary = self.knowledge_agent.summarize_source(
             source_title=source.title,
             source_type=source.type.value,
             whole_text=text,

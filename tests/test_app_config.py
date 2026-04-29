@@ -88,6 +88,42 @@ def test_maps_openai_completions_to_paimon_api(tmp_path, monkeypatch):
     assert config.model.api == 'chat.completions'
 
 
+def test_loads_default_knowledge_agent_config(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv('QWEN_API_KEY', raising=False)
+    write_config(tmp_path, base_config())
+
+    config = AppConfig.load()
+
+    assert config.knowledge_agent.allow_tools is False
+    assert config.knowledge_agent.max_steps == 1
+    assert config.knowledge_agent.tools_for('answer') == []
+
+
+def test_loads_node_level_knowledge_agent_tools(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv('QWEN_API_KEY', raising=False)
+    config = base_config()
+    config['knowledge_agent'] = {
+        'allow_tools': True,
+        'max_steps': 3,
+        'tools': {
+            'extract_claims': ['source_lookup'],
+            'organize_cards': [],
+            'answer': ['card_lookup', 'evidence_lookup'],
+        },
+    }
+    write_config(tmp_path, config)
+
+    loaded = AppConfig.load()
+
+    assert loaded.knowledge_agent.allow_tools is True
+    assert loaded.knowledge_agent.max_steps == 3
+    assert loaded.knowledge_agent.tools_for('extract_claims') == ['source_lookup']
+    assert loaded.knowledge_agent.tools_for('organize_cards') == []
+    assert loaded.knowledge_agent.tools_for('answer') == ['card_lookup', 'evidence_lookup']
+
+
 def test_unknown_models_mode_raises_value_error(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     config = base_config()

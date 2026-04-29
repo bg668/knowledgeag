@@ -55,12 +55,25 @@ class PromptConfig:
 
 
 @dataclass(slots=True)
+class KnowledgeAgentConfig:
+    allow_tools: bool = False
+    max_steps: int = 1
+    node_tools: dict[str, tuple[str, ...]] | None = None
+
+    def tools_for(self, node: str) -> list[str]:
+        if self.node_tools is None:
+            return []
+        return list(self.node_tools.get(node, ()))
+
+
+@dataclass(slots=True)
 class AppConfig:
     db_path: str
     model: ModelConfig
     ingest: IngestConfig
     retrieval: RetrievalConfig
     prompts: PromptConfig
+    knowledge_agent: KnowledgeAgentConfig
     temperature: float
     max_tokens: int | None
     api_key: str
@@ -86,6 +99,7 @@ class AppConfig:
         ingest = raw.get('ingest', {})
         retrieval = raw.get('retrieval', {})
         prompts = raw.get('system_prompts', {})
+        knowledge_agent = raw.get('knowledge_agent', {})
 
         runtime_backend = os.getenv('KNOWLEDGEAG_RUNTIME', 'paimon' if api_key else 'mock')
 
@@ -110,6 +124,7 @@ class AppConfig:
                 claim_extraction=prompts.get('claim_extraction', '你是知识接入阶段的 ClaimDraft 提取器。'),
                 card_organization=prompts.get('card_organization', '你是知识卡组织器。'),
             ),
+            knowledge_agent=_load_knowledge_agent_config(knowledge_agent),
             temperature=float(raw.get('temperature', 0.2)),
             max_tokens=raw.get('max_tokens'),
             api_key=api_key,
@@ -187,3 +202,18 @@ def _normalize_model_api(api: str) -> str:
             "'openai-responses', 'chat.completions', or 'responses'"
         )
     return normalized
+
+
+def _load_knowledge_agent_config(raw: dict) -> KnowledgeAgentConfig:
+    tools = raw.get('tools') or {}
+    if not isinstance(tools, dict):
+        raise ValueError('knowledge_agent.tools must be an object')
+    node_tools = {
+        str(node): tuple(str(tool_name) for tool_name in (tool_names or ()))
+        for node, tool_names in tools.items()
+    }
+    return KnowledgeAgentConfig(
+        allow_tools=bool(raw.get('allow_tools', False)),
+        max_steps=max(1, int(raw.get('max_steps', 1))),
+        node_tools=node_tools,
+    )

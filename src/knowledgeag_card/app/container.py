@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from knowledgeag_card.adapters.llm.mock_llm import MockLLMAdapter
-from knowledgeag_card.adapters.llm.paimonsdk_adapter import PaimonSDKAdapter
+from knowledgeag_card.agents.mock_knowledge_agent import MockKnowledgeAgent
+from knowledgeag_card.agents.paimon_knowledge_agent import PaimonKnowledgeAgent
 from knowledgeag_card.app.config import AppConfig
 from knowledgeag_card.domain.models import StorageStats
 from knowledgeag_card.ingestion.card_organizer import CardOrganizer
@@ -28,6 +28,7 @@ from knowledgeag_card.storage.evidence_repository import EvidenceRepository
 from knowledgeag_card.storage.source_repository import SourceRepository
 from knowledgeag_card.storage.sqlite_db import Database
 from knowledgeag_card.storage.vector_index import SimpleCardIndex
+from knowledgeag_card.tools.registry import ToolRegistry
 from knowledgeag_card.validation.answer_validator import AnswerValidator
 from knowledgeag_card.validation.card_validator import CardValidator
 from knowledgeag_card.validation.claim_validator import ClaimValidator
@@ -43,18 +44,19 @@ class AppContainer:
         self.claims = ClaimRepository(self.db)
         self.cards = CardRepository(self.db)
         self.card_index = SimpleCardIndex(self.cards)
+        self.tool_registry = ToolRegistry()
 
-        self.llm = self._build_llm()
+        self.knowledge_agent = self._build_knowledge_agent()
 
         self.source_loader = SourceLoader()
         self.read_planner = ReadPlanner(config.ingest)
         self.structural_splitter = StructuralSplitter()
-        self.source_summarizer = SourceSummarizer(self.llm)
-        self.claim_extractor = ClaimExtractor(self.llm, config)
+        self.source_summarizer = SourceSummarizer(self.knowledge_agent)
+        self.claim_extractor = ClaimExtractor(self.knowledge_agent, config)
         self.evidence_aligner = EvidenceAligner(config.ingest)
         self.claim_builder = ClaimBuilder()
         self.claim_validator = ClaimValidator()
-        self.card_organizer = CardOrganizer(self.llm)
+        self.card_organizer = CardOrganizer(self.knowledge_agent)
         self.card_validator = CardValidator()
         self.ingest_service = IngestService(
             source_loader=self.source_loader,
@@ -87,20 +89,17 @@ class AppContainer:
             self.trigger_rules,
         )
         self.answer_validator = AnswerValidator()
-        self.answer_service = AnswerService(self.llm, PromptBuilder(), ResponseFormatter())
+        self.answer_service = AnswerService(self.knowledge_agent, PromptBuilder(), ResponseFormatter())
         self.agent_loop = AgentLoop(self.validation_service, self.answer_service)
 
     @classmethod
     def build(cls) -> 'AppContainer':
         return cls(AppConfig.load())
 
-    def _build_llm(self):
+    def _build_knowledge_agent(self):
         if self.config.runtime_backend == 'paimon' and self.config.api_key:
-            try:
-                return PaimonSDKAdapter(self.config)
-            except Exception:
-                return MockLLMAdapter()
-        return MockLLMAdapter()
+            return PaimonKnowledgeAgent(self.config, self.tool_registry)
+        return MockKnowledgeAgent()
 
     def stats(self) -> StorageStats:
         return StorageStats(

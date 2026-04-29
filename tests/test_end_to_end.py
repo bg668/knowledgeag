@@ -66,6 +66,8 @@ def test_end_to_end(tmp_path, monkeypatch):
     result = results[0]
     assert result.claims
     assert result.cards
+    assert all(evidence.evidence_quote for evidence in result.evidences)
+    assert all(evidence.evidence_quote in evidence.content for evidence in result.evidences)
     answer = app.ask('AI Coding 中如何控制变更半径？')
     assert answer
 
@@ -84,3 +86,11 @@ def test_mock_ingest_generates_multiple_themed_cards_for_long_document(tmp_path,
     assert len(result.cards) > 1
     assert all(3 <= len(card.core_points) <= 7 for card in result.cards)
     assert all(card.claim_ids and card.evidence_ids for card in result.cards)
+    assert all(evidence.evidence_quote for evidence in result.evidences)
+    claim_by_id = {claim.claim_id: claim for claim in result.claims}
+    claim_sets = [frozenset(card.claim_ids) for card in result.cards]
+    assert len(claim_sets) == len(set(claim_sets))
+    for card in result.cards:
+        assert len(card.core_points) == len(card.claim_ids)
+        assert [claim_by_id[claim_id].text for claim_id in card.claim_ids] == card.core_points
+        assert all(claim_by_id[claim_id].evidence_ids for claim_id in card.claim_ids)

@@ -25,6 +25,9 @@ CREATE TABLE IF NOT EXISTS evidences (
     source_id TEXT NOT NULL,
     source_version TEXT NOT NULL,
     loc TEXT NOT NULL,
+    evidence_quote TEXT NOT NULL DEFAULT '',
+    context_before TEXT NOT NULL DEFAULT '',
+    context_after TEXT NOT NULL DEFAULT '',
     content TEXT NOT NULL,
     normalized_content TEXT,
     FOREIGN KEY(source_id, source_version) REFERENCES sources(source_id, version_id)
@@ -66,6 +69,7 @@ class Database:
             conn.execute('PRAGMA foreign_keys = ON')
             conn.executescript(SCHEMA)
             self._migrate_sources_table(conn)
+            self._migrate_evidences_table(conn)
             conn.commit()
 
     def _migrate_sources_table(self, conn: sqlite3.Connection) -> None:
@@ -94,11 +98,34 @@ class Database:
             )
         conn.execute('DROP TABLE sources_legacy')
 
+    def _migrate_evidences_table(self, conn: sqlite3.Connection) -> None:
+        columns = self._table_columns(conn, 'evidences')
+        if not columns:
+            return
+        if 'evidence_quote' not in columns:
+            conn.execute("ALTER TABLE evidences ADD COLUMN evidence_quote TEXT NOT NULL DEFAULT ''")
+        if 'context_before' not in columns:
+            conn.execute("ALTER TABLE evidences ADD COLUMN context_before TEXT NOT NULL DEFAULT ''")
+        if 'context_after' not in columns:
+            conn.execute("ALTER TABLE evidences ADD COLUMN context_after TEXT NOT NULL DEFAULT ''")
+        conn.execute(
+            """
+            UPDATE evidences
+            SET evidence_quote = content
+            WHERE evidence_quote = ''
+            """
+        )
+
     @staticmethod
     def _source_primary_key_columns(conn: sqlite3.Connection) -> list[str]:
         rows = conn.execute('PRAGMA table_info(sources)').fetchall()
         pk_rows = sorted((row for row in rows if row[5]), key=lambda row: row[5])
         return [str(row[1]) for row in pk_rows]
+
+    @staticmethod
+    def _table_columns(conn: sqlite3.Connection, table_name: str) -> set[str]:
+        rows = conn.execute(f'PRAGMA table_info({table_name})').fetchall()
+        return {str(row[1]) for row in rows}
 
     @contextmanager
     def connect(self) -> Iterator[sqlite3.Connection]:

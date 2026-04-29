@@ -23,8 +23,15 @@ class PromptBuilder:
             lines.append('')
             lines.append('Evidences:')
             for evidence in result.evidences[:8]:
-                snippet = evidence.content.replace('\n', ' ')[:220]
-                lines.append(f'- [{evidence.loc}] {snippet}')
+                quote = evidence.evidence_quote.replace('\n', ' ')[:220]
+                lines.append(f'- [{evidence.loc}] quote: {quote}')
+                context = ' '.join(
+                    part.replace('\n', ' ')
+                    for part in [evidence.context_before, evidence.context_after]
+                    if part
+                )[:220]
+                if context:
+                    lines.append(f'  context: {context}')
         lines.append('')
         lines.append('要求：基于上述知识回答；如有不确定，明确说不确定；涉及证据时引用 loc。')
         return '\n'.join(lines)

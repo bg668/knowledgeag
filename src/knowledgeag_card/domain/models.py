@@ -33,8 +33,19 @@ class Evidence:
     source_id: str
     source_version: str
     loc: str
-    content: str
+    content: str = ''
+    evidence_quote: str = ''
+    context_before: str = ''
+    context_after: str = ''
     normalized_content: str | None = None
+
+    def __post_init__(self) -> None:
+        if not self.evidence_quote and self.content:
+            self.evidence_quote = self.content
+        if not self.content:
+            self.content = '\n'.join(
+                part for part in [self.context_before, self.evidence_quote, self.context_after] if part
+            )
 
 
 @dataclass(slots=True)

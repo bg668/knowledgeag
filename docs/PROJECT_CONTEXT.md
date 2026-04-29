@@ -223,13 +223,16 @@ source_summary  LLM 生成的来源摘要，可为空
 
 ### Evidence
 
-从 Source 截取的可定位证据窗口。
+从 Source 定位出的最小原文证据和辅助上下文。
 ```text
 evidence_id          ev_<uuid>
 source_id            所属 Source
 source_version       对应 Source.version_id
-loc                  section/chars 或 file/lines
-content              证据窗口文本
+loc                  quote 的 section/chars 或 file/lines
+evidence_quote       最小可验证原文片段
+context_before       quote 前的辅助上下文
+context_after        quote 后的辅助上下文
+content              兼容字段，由 context_before + evidence_quote + context_after 组成
 normalized_content   标准化证据文本
 ```
 

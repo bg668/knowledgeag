@@ -133,32 +133,18 @@
             ],
             "rows": [
                 [
-                    "card_20514042b0894fd281e95ba1e6f69b53",
-                    "AI 时代模块化设计原则",
+                    "card_51e167e824ba4df199fff3386dc099e5",
+                    "AI Coding 时代的架构设计与模式",
                     "principle",
-                    "定义 AI Coding 背景下模块化设计的核心价值，强调通过隔离变化来控制爆炸半径，而非形式上的代码拆分。",
-                    "[\"AI 辅助编程场景\", \"系统架构演进\", \"代码重构优化\", \"团队协作开发\"]",
-                    "[\"核心价值是把变化关进小房间，控制爆炸半径。\", \"真正模块化是当需求变化时，只有应该变化的部分发生变化。\", \"模块化不是把代码切碎，而是把变化关起来。\", \"好的模块化是给人看的地图也是给 AI 走路的护栏。\", \"避免形式上的拆分，追求实质上的变化隔离。\", \"设计应围绕变化点自然生长，而非预先过度设计。\"]",
-                    "[\"以变化隔离程度评估模块质量\", \"为 AI 生成代码提供清晰上下文护栏\", \"优先识别变化点而非固定点\"]",
-                    "[\"为了拆分而拆分导致逻辑碎片化\", \"追求代码形式高级忽视变化控制\", \"模块边界模糊导致变更爆炸\"]",
-                    "[\"clm_bfdad7fa90cd4cffad63437a96cd6f70\", \"clm_795de3a5d3454b6e82bab66c3532c5ad\", \"clm_6e0a24811cb3482cb326473246410b2c\"]",
-                    "[\"ev_14b84c8b59f344efb90d0b7dcef24781\", \"ev_c2cde3cf3e71461d8e8abb0108569b08\", \"ev_f5d7ea5fc1da4e048a70dda29c6f6418\"]",
-                    "[\"模块化\", \"架构设计\", \"AI Coding\", \"变化控制\"]",
-                    "2026-04-27T01:50:56.380031+00:00"
-                ],
-                [
-                    "card_3c57bcff82484057ae5cc8e3c81509e4",
-                    "面向变化点的设计模式应用",
-                    "pattern",
-                    "汇总常用设计模式在 AI 时代的具体应用场景，指导如何围绕变化点选择合适模式以稳定主流程。",
-                    "[\"外部系统集成\", \"复杂业务流程\", \"Agent 行为管理\", \"算法策略切换\"]",
-                    "[\"Facade 模式隐藏内部复杂，暴露简单入口，适合底层替换。\", \"Adapter 模式统一外部协议，让外部变化止步于边界。\", \"Strategy 模式抽取易变算法规则，保持主流程稳定。\", \"Command 模式将动作对象化，确保 Agent 行为可审计回放。\", \"Observer 模式核心流程只发事件，实现逻辑与展示解耦。\", \"State 模式明确状态流转，避免流程被布尔值拖垮。\", \"模式选型原则：先找变化点再选模式，围绕变化点自然生长。\"]",
-                    "[\"让模式围绕变化点自然生长\", \"确保核心流程稳定易变部分隔离\", \"Agent 动作必须可见可审计\"]",
-                    "[\"孤立使用设计模式脱离业务场景\", \"过度设计导致模式堆砌\", \"忽略 Agent 行为可审计性\"]",
-                    "[\"clm_bfdad7fa90cd4cffad63437a96cd6f70\", \"clm_795de3a5d3454b6e82bab66c3532c5ad\", \"clm_6e0a24811cb3482cb326473246410b2c\"]",
-                    "[\"ev_14b84c8b59f344efb90d0b7dcef24781\", \"ev_c2cde3cf3e71461d8e8abb0108569b08\", \"ev_f5d7ea5fc1da4e048a70dda29c6f6418\"]",
-                    "[\"设计模式\", \"解耦\", \"Strategy\", \"Adapter\", \"Agent\"]",
-                    "2026-04-27T01:50:56.380049+00:00"
+                    "在 AI Coding 时代，架构设计的核心转向控制修改范围与爆炸半径，并通过特定设计模式管理复杂度与 Agent 行为。",
+                    "[\"AI 辅助开发场景\", \"Agent 系统设计\", \"高可维护性代码架构\"]",
+                    "[\"AI Coding 时代，模块化设计的核心价值是把变化关进小房间里，控制爆炸半径。\", \"AI Coding 时代真正昂贵的东西是修改范围是否可控，而非人手写代码的时间。\", \"Facade 外观模式的核心思想是复杂的东西藏在里面，外面只暴露一个简单入口。\", \"Strategy 策略模式用于把容易变化的算法、规则、prompt、流程步骤抽成可替换策略。\", \"Command 命令模式在 Agent 和 AI Coding 中非常重要，因为 Agent 做了什么必须可见、可审计、可回放。\"]",
+                    "[\"优先关注修改范围的可控性而非编码速度\", \"将易变逻辑封装为可替换策略\", \"确保 Agent 操作具备审计与回放能力\"]",
+                    "[\"忽视变化爆炸半径的模块化设计\", \"将算法或 prompt 硬编码在流程中\", \"Agent 行为不可见或无法审计\"]",
+                    "[\"clm_c69fd8a025334feeacfb147361379023\", \"clm_11d15f87a5b14412bf06db2dee6d180c\", \"clm_3441307718e14198a6ef1eede38ad531\", \"clm_28c9afc258d74238948522797ae34527\", \"clm_4649dfdd58444253baf67cb81b762394\"]",
+                    "[\"ev_3c763ba72f334d378c12606c0c7914f1\", \"ev_891517042c6245c087714c28e1522034\", \"ev_af446f8a5f974b12b3a754bb55a0371c\", \"ev_8ef3506f475342669c11260862c2e12c\", \"ev_355ffe8513374705a774b4deeef7057b\"]",
+                    "[\"AI Coding\", \"架构设计\", \"设计模式\", \"模块化\"]",
+                    "2026-04-29T15:54:22.631722+00:00"
                 ]
             ]
         },
@@ -223,74 +209,39 @@
             ],
             "rows": [
                 [
-                    "clm_bfdad7fa90cd4cffad63437a96cd6f70",
-                    "AI Coding 时代模块化设计的核心价值不是让代码看起来更高级，而是把变化关进小房间里，控制爆炸半径。",
-                    "[\"ev_c2cde3cf3e71461d8e8abb0108569b08\"]",
+                    "clm_c69fd8a025334feeacfb147361379023",
+                    "AI Coding 时代，模块化设计的核心价值是把变化关进小房间里，控制爆炸半径。",
+                    "[\"ev_3c763ba72f334d378c12606c0c7914f1\"]",
                     "supported",
-                    "2026-04-27T01:49:34.607561+00:00"
+                    "2026-04-29T15:53:31.512161+00:00"
                 ],
                 [
-                    "clm_795de3a5d3454b6e82bab66c3532c5ad",
-                    "真正的模块化不是形式上的拆分，而是当一个需求变化时，只有应该变化的部分发生变化。",
-                    "[\"ev_f5d7ea5fc1da4e048a70dda29c6f6418\"]",
+                    "clm_11d15f87a5b14412bf06db2dee6d180c",
+                    "AI Coding 时代真正昂贵的东西是修改范围是否可控，而非人手写代码的时间。",
+                    "[\"ev_891517042c6245c087714c28e1522034\"]",
                     "supported",
-                    "2026-04-27T01:49:34.607570+00:00"
+                    "2026-04-29T15:53:31.512195+00:00"
                 ],
                 [
-                    "clm_6e0a24811cb3482cb326473246410b2c",
-                    "Facade 外观模式的核心思想是复杂的东西藏在里面，外面只暴露一个简单入口，适合底层复杂且未来可能替换的系统。",
-                    "[\"ev_14b84c8b59f344efb90d0b7dcef24781\"]",
+                    "clm_3441307718e14198a6ef1eede38ad531",
+                    "Facade 外观模式的核心思想是复杂的东西藏在里面，外面只暴露一个简单入口。",
+                    "[\"ev_af446f8a5f974b12b3a754bb55a0371c\"]",
                     "supported",
-                    "2026-04-27T01:49:34.607574+00:00"
+                    "2026-04-29T15:53:31.512209+00:00"
                 ],
                 [
-                    "clm_b9ad9d0405e14005a25856bf0c281932",
-                    "Adapter 适配器模式解决的是不同外部系统怎么变成内部统一协议，让外部变化止步于边界。",
-                    "[\"ev_7dd5a982dd6d4c15813b0a1ed5a250b9\"]",
+                    "clm_28c9afc258d74238948522797ae34527",
+                    "Strategy 策略模式用于把容易变化的算法、规则、prompt、流程步骤抽成可替换策略。",
+                    "[\"ev_8ef3506f475342669c11260862c2e12c\"]",
                     "supported",
-                    "2026-04-27T01:49:34.607577+00:00"
+                    "2026-04-29T15:53:31.512223+00:00"
                 ],
                 [
-                    "clm_09fa6b29cde34610b83a53a1a68d54a4",
-                    "Strategy 策略模式把容易变化的算法、规则、prompt、流程步骤抽成可替换策略，主流程稳定。",
-                    "[\"ev_9406c30bf9904884974add9d821ccca1\"]",
+                    "clm_4649dfdd58444253baf67cb81b762394",
+                    "Command 命令模式在 Agent 和 AI Coding 中非常重要，因为 Agent 做了什么必须可见、可审计、可回放。",
+                    "[\"ev_355ffe8513374705a774b4deeef7057b\"]",
                     "supported",
-                    "2026-04-27T01:49:34.607580+00:00"
-                ],
-                [
-                    "clm_37cbdd8833c1445f9b49d859e75357b9",
-                    "Command 命令模式把动作变成可审计对象，因为 Agent 最大的问题是它做了什么必须可见、可审计、可回放。",
-                    "[\"ev_c4af7765edf14820921674a2160cf490\"]",
-                    "supported",
-                    "2026-04-27T01:49:34.607583+00:00"
-                ],
-                [
-                    "clm_b1f789d524354deaa96f89c46e76eae3",
-                    "Observer 观察者模式让核心流程只发事件，不关心谁订阅，实现核心逻辑和展示逻辑解耦。",
-                    "[\"ev_9152b46291c24464bbe5822f73d69626\"]",
-                    "supported",
-                    "2026-04-27T01:49:34.607585+00:00"
-                ],
-                [
-                    "clm_416896258c2a4b5587ca76428d816fe5",
-                    "State 状态模式明确当前处于哪一步，以及下一步允许去哪，避免流程被布尔值拖垮。",
-                    "[\"ev_59eacfa36c254e639eff3fd717597da1\"]",
-                    "supported",
-                    "2026-04-27T01:49:34.607588+00:00"
-                ],
-                [
-                    "clm_ca6000c802e54e48ad4c86e01f32a725",
-                    "设计模式不是孤立使用的，而是围绕变化点自然长出来的，应先找变化点再选设计模式。",
-                    "[\"ev_23b388d2090f4a3e8dc6311ae886ffa7\"]",
-                    "supported",
-                    "2026-04-27T01:49:34.607590+00:00"
-                ],
-                [
-                    "clm_75093d730cab4b27939f097b34d1157c",
-                    "模块化不是把代码切碎，而是把变化关起来，好的模块化是给人看的地图也是给 AI 走路的护栏。",
-                    "[\"ev_80a08d15c4494807b0622b63eca32bb5\"]",
-                    "supported",
-                    "2026-04-27T01:49:34.607592+00:00"
+                    "2026-04-29T15:53:31.512239+00:00"
                 ]
             ]
         },
@@ -300,7 +251,7 @@
             "name": "evidences",
             "withoutRowId": false,
             "strict": false,
-            "ddl": "CREATE TABLE evidences (\n    evidence_id TEXT PRIMARY KEY,\n    source_id TEXT NOT NULL,\n    source_version TEXT NOT NULL,\n    loc TEXT NOT NULL,\n    content TEXT NOT NULL,\n    normalized_content TEXT,\n    FOREIGN KEY(source_id) REFERENCES sources(source_id)\n)",
+            "ddl": "CREATE TABLE evidences (\n    evidence_id TEXT PRIMARY KEY,\n    source_id TEXT NOT NULL,\n    source_version TEXT NOT NULL,\n    loc TEXT NOT NULL,\n    evidence_quote TEXT NOT NULL DEFAULT '',\n    context_before TEXT NOT NULL DEFAULT '',\n    context_after TEXT NOT NULL DEFAULT '',\n    content TEXT NOT NULL,\n    normalized_content TEXT,\n    FOREIGN KEY(source_id, source_version) REFERENCES sources(source_id, version_id)\n)",
             "columns": [
                 {
                     "name": "evidence_id",
@@ -343,6 +294,48 @@
                     ]
                 },
                 {
+                    "name": "evidence_quote",
+                    "type": "TEXT",
+                    "constraints": [
+                        {
+                            "type": "NOT NULL",
+                            "definition": "NOT NULL "
+                        },
+                        {
+                            "type": "DEFAULT",
+                            "definition": "DEFAULT ''"
+                        }
+                    ]
+                },
+                {
+                    "name": "context_before",
+                    "type": "TEXT",
+                    "constraints": [
+                        {
+                            "type": "NOT NULL",
+                            "definition": "NOT NULL "
+                        },
+                        {
+                            "type": "DEFAULT",
+                            "definition": "DEFAULT ''"
+                        }
+                    ]
+                },
+                {
+                    "name": "context_after",
+                    "type": "TEXT",
+                    "constraints": [
+                        {
+                            "type": "NOT NULL",
+                            "definition": "NOT NULL "
+                        },
+                        {
+                            "type": "DEFAULT",
+                            "definition": "DEFAULT ''"
+                        }
+                    ]
+                },
+                {
                     "name": "content",
                     "type": "TEXT",
                     "constraints": [
@@ -360,89 +353,64 @@
             "constraints": [
                 {
                     "type": "FOREIGN KEY",
-                    "definition": "FOREIGN KEY(source_id) REFERENCES sources(source_id)\n"
+                    "definition": "FOREIGN KEY(source_id, source_version) REFERENCES sources(source_id, version_id)\n"
                 }
             ],
             "rows": [
                 [
-                    "ev_c2cde3cf3e71461d8e8abb0108569b08",
-                    "src_8ebc186e03344713bf32116832510c6e",
+                    "ev_3c763ba72f334d378c12606c0c7914f1",
+                    "src_075fc3750c93d1d34e73b6d1019a11ae",
                     "ac6913833d5ff5fd192cda657f9a5791b3367a82c3f8c7c284550f0feb056370",
-                    "section=AI Coding 时代，模块化设计为什么比以前更重要？; chars=49-617",
-                    "化设计如何把影响范围收敛到最小，以及哪些设计模式最有用。**\n\n---\n\n# AI Coding 时代，模块化设计为什么比以前更重要？\n\n大家好，今天我们聊一个非常工程化、但又特别适合 AI Coding 的话题：\n\n**模块化设计。**\n\n更具体一点，我们聊的是：\n\n> 当我们用 Codex、Claude Code、Cursor、Kimi Code 这类 AI 编程工具时，为什么模块化设计会变得比以前更关键？哪些设计模式最能帮助我们控制修改范围，避免“改一个点，炸一大片”？\n\n我先给出今天的核心观点：\n\n> **AI Coding 时代，模块化设计的核心价值，不是让代码看起来更高级，而是把变化关进小房间里。**\n\n或者更形象一点：\n\n> **好的模块边界，就像保险丝。一个地方短路，不应该烧掉整栋楼。**\n\n这就是今天的第一句金句：\n\n> **模块化不是为了分文件，而是为了控制爆炸半径。**\n\n---\n\n# 一、AI Coding 中真正昂贵的东西变了\n\n过去我们写代码，最贵的是“人手写代码的时间”。\n\n一个功能，可能需要人慢慢写、慢慢调、慢慢改。\n\n但现在有了 AI Coding，代码生成变快了。\n你一句话，它能帮你生成一个模块。\n你再一句话，它能帮你改十个文件。\n你再一句话，它甚至能重构一套结构。\n\n听起来很爽，但",
-                    "化设计如何把影响范围收敛到最小，以及哪些设计模式最有用。** --- # ai coding 时代，模块化设计为什么比以前更重要？ 大家好，今天我们聊一个非常工程化、但又特别适合 ai coding 的话题： **模块化设计。** 更具体一点，我们聊的是： > 当我们用 codex、claude code、cursor、kimi code 这类 ai 编程工具时，为什么模块化设计会变得比以前更关键？哪些设计模式最能帮助我们控制修改范围，避免“改一个点，炸一大片”？ 我先给出今天的核心观点： > **ai coding 时代，模块化设计的核心价值，不是让代码看起来更高级，而是把变化关进小房间里。** 或者更形象一点： > **好的模块边界，就像保险丝。一个地方短路，不应该烧掉整栋楼。** 这就是今天的第一句金句： > **模块化不是为了分文件，而是为了控制爆炸半径。** --- # 一、ai coding 中真正昂贵的东西变了 过去我们写代码，最贵的是“人手写代码的时间”。 一个功能，可能需要人慢慢写、慢慢调、慢慢改。 但现在有了 ai coding，代码生成变快了。 你一句话，它能帮你生成一个模块。 你再一句话，它能帮你改十个文件。 你再一句话，它甚至能重构一套结构。 听起来很爽，但"
+                    "section=AI Coding 时代，模块化设计为什么比以前更重要？; chars=309-357",
+                    "AI Coding 时代，模块化设计的核心价值，不是让代码看起来更高级，而是把变化关进小房间里。",
+                    "化设计如何把影响范围收敛到最小，以及哪些设计模式最有用。**\n\n---\n\n# AI Coding 时代，模块化设计为什么比以前更重要？\n\n大家好，今天我们聊一个非常工程化、但又特别适合 AI Coding 的话题：\n\n**模块化设计。**\n\n更具体一点，我们聊的是：\n\n> 当我们用 Codex、Claude Code、Cursor、Kimi Code 这类 AI 编程工具时，为什么模块化设计会变得比以前更关键？哪些设计模式最能帮助我们控制修改范围，避免“改一个点，炸一大片”？\n\n我先给出今天的核心观点：\n\n> **",
+                    "**\n\n或者更形象一点：\n\n> **好的模块边界，就像保险丝。一个地方短路，不应该烧掉整栋楼。**\n\n这就是今天的第一句金句：\n\n> **模块化不是为了分文件，而是为了控制爆炸半径。**\n\n---\n\n# 一、AI Coding 中真正昂贵的东西变了\n\n过去我们写代码，最贵的是“人手写代码的时间”。\n\n一个功能，可能需要人慢慢写、慢慢调、慢慢改。\n\n但现在有了 AI Coding，代码生成变快了。\n你一句话，它能帮你生成一个模块。\n你再一句话，它能帮你改十个文件。\n你再一句话，它甚至能重构一套结构。\n\n听起来很爽，但",
+                    "化设计如何把影响范围收敛到最小，以及哪些设计模式最有用。**\n\n---\n\n# AI Coding 时代，模块化设计为什么比以前更重要？\n\n大家好，今天我们聊一个非常工程化、但又特别适合 AI Coding 的话题：\n\n**模块化设计。**\n\n更具体一点，我们聊的是：\n\n> 当我们用 Codex、Claude Code、Cursor、Kimi Code 这类 AI 编程工具时，为什么模块化设计会变得比以前更关键？哪些设计模式最能帮助我们控制修改范围，避免“改一个点，炸一大片”？\n\n我先给出今天的核心观点：\n\n> **\nAI Coding 时代，模块化设计的核心价值，不是让代码看起来更高级，而是把变化关进小房间里。\n**\n\n或者更形象一点：\n\n> **好的模块边界，就像保险丝。一个地方短路，不应该烧掉整栋楼。**\n\n这就是今天的第一句金句：\n\n> **模块化不是为了分文件，而是为了控制爆炸半径。**\n\n---\n\n# 一、AI Coding 中真正昂贵的东西变了\n\n过去我们写代码，最贵的是“人手写代码的时间”。\n\n一个功能，可能需要人慢慢写、慢慢调、慢慢改。\n\n但现在有了 AI Coding，代码生成变快了。\n你一句话，它能帮你生成一个模块。\n你再一句话，它能帮你改十个文件。\n你再一句话，它甚至能重构一套结构。\n\n听起来很爽，但",
+                    "化设计如何把影响范围收敛到最小，以及哪些设计模式最有用。** --- # ai coding 时代，模块化设计为什么比以前更重要？ 大家好，今天我们聊一个非常工程化、但又特别适合 ai coding 的话题： **模块化设计。** 更具体一点，我们聊的是： > 当我们用 codex、claude code、cursor、kimi code 这类 ai 编程工具时，为什么模块化设计会变得比以前更关键？哪些设计模式最能帮助我们控制修改范围，避免“改一个点，炸一大片”？ 我先给出今天的核心观点： > ** ai coding 时代，模块化设计的核心价值，不是让代码看起来更高级，而是把变化关进小房间里。 ** 或者更形象一点： > **好的模块边界，就像保险丝。一个地方短路，不应该烧掉整栋楼。** 这就是今天的第一句金句： > **模块化不是为了分文件，而是为了控制爆炸半径。** --- # 一、ai coding 中真正昂贵的东西变了 过去我们写代码，最贵的是“人手写代码的时间”。 一个功能，可能需要人慢慢写、慢慢调、慢慢改。 但现在有了 ai coding，代码生成变快了。 你一句话，它能帮你生成一个模块。 你再一句话，它能帮你改十个文件。 你再一句话，它甚至能重构一套结构。 听起来很爽，但"
                 ],
                 [
-                    "ev_f5d7ea5fc1da4e048a70dda29c6f6418",
-                    "src_8ebc186e03344713bf32116832510c6e",
+                    "ev_891517042c6245c087714c28e1522034",
+                    "src_075fc3750c93d1d34e73b6d1019a11ae",
                     "ac6913833d5ff5fd192cda657f9a5791b3367a82c3f8c7c284550f0feb056370",
-                    "section=二、模块化设计的本质：控制变更半径; chars=777-1346",
-                    "他模块\n* 出问题时能不能快速定位\n* 新功能能不能局部增加，而不是全局侵入\n\n因此，模块化设计在 AI Coding 中变得特别重要。\n\n因为模块化设计做的事情，本质上是：\n\n> **把系统拆成一个个有边界的小房间，让 AI 每次只进入该进入的房间。**\n\n这就是第二句金句：\n\n> **给 AI 的最好约束，不是长篇原则，而是清晰边界。**\n\n---\n\n# 二、模块化设计的本质：控制变更半径\n\n很多人理解模块化，会以为就是：\n\n“多建几个文件。”\n“多拆几个目录。”\n“多写几个类。”\n\n但这不是真正的模块化。\n\n真正的模块化不是形式上的拆分，而是：\n\n> **当一个需求变化时，只有应该变化的部分发生变化。**\n\n比如你现在要把模型服务从 OpenAI 换成 Kimi。\n\n好的模块化设计下，你应该只改：\n\n```text\nproviders\/kimi_adapter.py\nconfig.json\n```\n\n最多再改一个：\n\n```text\nproviders\/factory.py\n```\n\n但如果你发现自己要改：\n\n```text\nmain.py\ntui.py\nagent.py\nknowledge.py\nsummary.py\nreport.py\nconfig.py\n```\n\n那就说明模型调用这件事没有被很好地封装。\n\n再",
-                    "他模块 * 出问题时能不能快速定位 * 新功能能不能局部增加，而不是全局侵入 因此，模块化设计在 ai coding 中变得特别重要。 因为模块化设计做的事情，本质上是： > **把系统拆成一个个有边界的小房间，让 ai 每次只进入该进入的房间。** 这就是第二句金句： > **给 ai 的最好约束，不是长篇原则，而是清晰边界。** --- # 二、模块化设计的本质：控制变更半径 很多人理解模块化，会以为就是： “多建几个文件。” “多拆几个目录。” “多写几个类。” 但这不是真正的模块化。 真正的模块化不是形式上的拆分，而是： > **当一个需求变化时，只有应该变化的部分发生变化。** 比如你现在要把模型服务从 openai 换成 kimi。 好的模块化设计下，你应该只改： ```text providers\/kimi_adapter.py config.json ``` 最多再改一个： ```text providers\/factory.py ``` 但如果你发现自己要改： ```text main.py tui.py agent.py knowledge.py summary.py report.py config.py ``` 那就说明模型调用这件事没有被很好地封装。 再"
+                    "section=一、AI Coding 中真正昂贵的东西变了; chars=701-740",
+                    "所以 AI Coding 时代，真正昂贵的东西变成了：\n\n* 修改范围是否可控",
+                    "控制爆炸半径。**\n\n---\n\n# 一、AI Coding 中真正昂贵的东西变了\n\n过去我们写代码，最贵的是“人手写代码的时间”。\n\n一个功能，可能需要人慢慢写、慢慢调、慢慢改。\n\n但现在有了 AI Coding，代码生成变快了。\n你一句话，它能帮你生成一个模块。\n你再一句话，它能帮你改十个文件。\n你再一句话，它甚至能重构一套结构。\n\n听起来很爽，但问题也来了：\n\n**AI 太会改代码了。**\n\n它不怕改多。\n它不怕动大。\n它不怕重写。\n它有时候甚至会因为“热心”，把本来只需要改一行的问题，变成一次全项目重构。",
+                    "* 人是否能审查\n* AI 是否能理解边界\n* 一个模块改动是否会影响其他模块\n* 出问题时能不能快速定位\n* 新功能能不能局部增加，而不是全局侵入\n\n因此，模块化设计在 AI Coding 中变得特别重要。\n\n因为模块化设计做的事情，本质上是：\n\n> **把系统拆成一个个有边界的小房间，让 AI 每次只进入该进入的房间。**\n\n这就是第二句金句：\n\n> **给 AI 的最好约束，不是长篇原则，而是清晰边界。**\n\n---\n\n# 二、模块化设计的本质：控制变更半径\n\n很多人理解模块化，会以为就是：\n\n“多建几个文",
+                    "控制爆炸半径。**\n\n---\n\n# 一、AI Coding 中真正昂贵的东西变了\n\n过去我们写代码，最贵的是“人手写代码的时间”。\n\n一个功能，可能需要人慢慢写、慢慢调、慢慢改。\n\n但现在有了 AI Coding，代码生成变快了。\n你一句话，它能帮你生成一个模块。\n你再一句话，它能帮你改十个文件。\n你再一句话，它甚至能重构一套结构。\n\n听起来很爽，但问题也来了：\n\n**AI 太会改代码了。**\n\n它不怕改多。\n它不怕动大。\n它不怕重写。\n它有时候甚至会因为“热心”，把本来只需要改一行的问题，变成一次全项目重构。\n所以 AI Coding 时代，真正昂贵的东西变成了：\n\n* 修改范围是否可控\n* 人是否能审查\n* AI 是否能理解边界\n* 一个模块改动是否会影响其他模块\n* 出问题时能不能快速定位\n* 新功能能不能局部增加，而不是全局侵入\n\n因此，模块化设计在 AI Coding 中变得特别重要。\n\n因为模块化设计做的事情，本质上是：\n\n> **把系统拆成一个个有边界的小房间，让 AI 每次只进入该进入的房间。**\n\n这就是第二句金句：\n\n> **给 AI 的最好约束，不是长篇原则，而是清晰边界。**\n\n---\n\n# 二、模块化设计的本质：控制变更半径\n\n很多人理解模块化，会以为就是：\n\n“多建几个文",
+                    "控制爆炸半径。** --- # 一、ai coding 中真正昂贵的东西变了 过去我们写代码，最贵的是“人手写代码的时间”。 一个功能，可能需要人慢慢写、慢慢调、慢慢改。 但现在有了 ai coding，代码生成变快了。 你一句话，它能帮你生成一个模块。 你再一句话，它能帮你改十个文件。 你再一句话，它甚至能重构一套结构。 听起来很爽，但问题也来了： **ai 太会改代码了。** 它不怕改多。 它不怕动大。 它不怕重写。 它有时候甚至会因为“热心”，把本来只需要改一行的问题，变成一次全项目重构。 所以 ai coding 时代，真正昂贵的东西变成了： * 修改范围是否可控 * 人是否能审查 * ai 是否能理解边界 * 一个模块改动是否会影响其他模块 * 出问题时能不能快速定位 * 新功能能不能局部增加，而不是全局侵入 因此，模块化设计在 ai coding 中变得特别重要。 因为模块化设计做的事情，本质上是： > **把系统拆成一个个有边界的小房间，让 ai 每次只进入该进入的房间。** 这就是第二句金句： > **给 ai 的最好约束，不是长篇原则，而是清晰边界。** --- # 二、模块化设计的本质：控制变更半径 很多人理解模块化，会以为就是： “多建几个文"
                 ],
                 [
-                    "ev_14b84c8b59f344efb90d0b7dcef24781",
-                    "src_8ebc186e03344713bf32116832510c6e",
+                    "ev_af446f8a5f974b12b3a754bb55a0371c",
+                    "src_075fc3750c93d1d34e73b6d1019a11ae",
                     "ac6913833d5ff5fd192cda657f9a5791b3367a82c3f8c7c284550f0feb056370",
-                    "section=四、Facade 外观模式：给复杂系统一个简单门面; chars=1862-2426",
-                    "适配器模式\nStrategy 策略模式\nCommand 命令模式\nObserver 观察者模式\nState 状态模式\nDecorator \/ Proxy 装饰器与代理模式\nComposite 组合模式\nFactory Method 工厂方法\n```\n\n它们每一个都在解决同一个问题：\n\n> **把容易变化的东西隔离起来。**\n\n下面我们一个一个讲。\n\n---\n\n# 四、Facade 外观模式：给复杂系统一个简单门面\n\n第一个模式是 Facade，外观模式。\n\n它是 AI Coding 中非常高频、非常实用的模式。\n\nFacade 的核心思想是：\n\n> **复杂的东西藏在里面，外面只暴露一个简单入口。**\n\n比如我们做 AI 应用，经常会调用 LLM。\n\n底层可能很复杂：\n\n* OpenAI 有一套接口\n* Kimi 有一套接口\n* Claude 有一套接口\n* Ollama 有一套接口\n* 有的用 Chat Completions\n* 有的用 Responses API\n* 有的支持 tools\n* 有的不支持\n* 有的返回 streaming\n* 有的返回完整文本\n\n如果你在业务代码里到处直接调用这些 SDK，就会非常危险。\n\n例如：\n\n```python\n# report.py\nclient.chat.com",
+                    "section=四、Facade 外观模式：给复杂系统一个简单门面; chars=2122-2166",
+                    "Facade 的核心思想是：\n\n> **复杂的东西藏在里面，外面只暴露一个简单入口。**",
+                    "适配器模式\nStrategy 策略模式\nCommand 命令模式\nObserver 观察者模式\nState 状态模式\nDecorator \/ Proxy 装饰器与代理模式\nComposite 组合模式\nFactory Method 工厂方法\n```\n\n它们每一个都在解决同一个问题：\n\n> **把容易变化的东西隔离起来。**\n\n下面我们一个一个讲。\n\n---\n\n# 四、Facade 外观模式：给复杂系统一个简单门面\n\n第一个模式是 Facade，外观模式。\n\n它是 AI Coding 中非常高频、非常实用的模式。",
+                    "比如我们做 AI 应用，经常会调用 LLM。\n\n底层可能很复杂：\n\n* OpenAI 有一套接口\n* Kimi 有一套接口\n* Claude 有一套接口\n* Ollama 有一套接口\n* 有的用 Chat Completions\n* 有的用 Responses API\n* 有的支持 tools\n* 有的不支持\n* 有的返回 streaming\n* 有的返回完整文本\n\n如果你在业务代码里到处直接调用这些 SDK，就会非常危险。\n\n例如：\n\n```python\n# report.py\nclient.chat.com",
+                    "适配器模式\nStrategy 策略模式\nCommand 命令模式\nObserver 观察者模式\nState 状态模式\nDecorator \/ Proxy 装饰器与代理模式\nComposite 组合模式\nFactory Method 工厂方法\n```\n\n它们每一个都在解决同一个问题：\n\n> **把容易变化的东西隔离起来。**\n\n下面我们一个一个讲。\n\n---\n\n# 四、Facade 外观模式：给复杂系统一个简单门面\n\n第一个模式是 Facade，外观模式。\n\n它是 AI Coding 中非常高频、非常实用的模式。\nFacade 的核心思想是：\n\n> **复杂的东西藏在里面，外面只暴露一个简单入口。**\n比如我们做 AI 应用，经常会调用 LLM。\n\n底层可能很复杂：\n\n* OpenAI 有一套接口\n* Kimi 有一套接口\n* Claude 有一套接口\n* Ollama 有一套接口\n* 有的用 Chat Completions\n* 有的用 Responses API\n* 有的支持 tools\n* 有的不支持\n* 有的返回 streaming\n* 有的返回完整文本\n\n如果你在业务代码里到处直接调用这些 SDK，就会非常危险。\n\n例如：\n\n```python\n# report.py\nclient.chat.com",
                     "适配器模式 strategy 策略模式 command 命令模式 observer 观察者模式 state 状态模式 decorator \/ proxy 装饰器与代理模式 composite 组合模式 factory method 工厂方法 ``` 它们每一个都在解决同一个问题： > **把容易变化的东西隔离起来。** 下面我们一个一个讲。 --- # 四、facade 外观模式：给复杂系统一个简单门面 第一个模式是 facade，外观模式。 它是 ai coding 中非常高频、非常实用的模式。 facade 的核心思想是： > **复杂的东西藏在里面，外面只暴露一个简单入口。** 比如我们做 ai 应用，经常会调用 llm。 底层可能很复杂： * openai 有一套接口 * kimi 有一套接口 * claude 有一套接口 * ollama 有一套接口 * 有的用 chat completions * 有的用 responses api * 有的支持 tools * 有的不支持 * 有的返回 streaming * 有的返回完整文本 如果你在业务代码里到处直接调用这些 sdk，就会非常危险。 例如： ```python # report.py client.chat.com"
                 ],
                 [
-                    "ev_7dd5a982dd6d4c15813b0a1ed5a250b9",
-                    "src_8ebc186e03344713bf32116832510c6e",
+                    "ev_8ef3506f475342669c11260862c2e12c",
+                    "src_075fc3750c93d1d34e73b6d1019a11ae",
                     "ac6913833d5ff5fd192cda657f9a5791b3367a82c3f8c7c284550f0feb056370",
-                    "section=五、Adapter 适配器模式：把外部差异挡在门外; chars=3521-4079",
-                    "KnowledgeStore 只负责知识存取\nReportExporter 只负责报告导出\n```\n\nFacade 的核心不是“包住一切”，而是“给一类复杂能力一个稳定入口”。\n\n这一节的金句是：\n\n> **外观模式的目标，是让复杂系统在外部看起来简单。**\n\n---\n\n# 五、Adapter 适配器模式：把外部差异挡在门外\n\n第二个模式是 Adapter，适配器模式。\n\nFacade 和 Adapter 很像，但它们解决的问题不一样。\n\nFacade 解决的是：\n\n> **复杂系统怎么给外部一个简单入口。**\n\nAdapter 解决的是：\n\n> **不同外部系统怎么变成内部统一协议。**\n\n比如你有多个模型 provider：\n\n```text\nOpenAI\nKimi\nClaude\nOllama\nLocalModel\n```\n\n它们的请求格式不同，返回格式也不同。\n\n如果这些差异进入业务代码，业务代码就会变得很脏。\n\n比如：\n\n```python\nif provider == \"openai\":\n    content = response.choices[0].message.content\nelif provider == \"kimi\":\n    content = response[\"dat",
-                    "knowledgestore 只负责知识存取 reportexporter 只负责报告导出 ``` facade 的核心不是“包住一切”，而是“给一类复杂能力一个稳定入口”。 这一节的金句是： > **外观模式的目标，是让复杂系统在外部看起来简单。** --- # 五、adapter 适配器模式：把外部差异挡在门外 第二个模式是 adapter，适配器模式。 facade 和 adapter 很像，但它们解决的问题不一样。 facade 解决的是： > **复杂系统怎么给外部一个简单入口。** adapter 解决的是： > **不同外部系统怎么变成内部统一协议。** 比如你有多个模型 provider： ```text openai kimi claude ollama localmodel ``` 它们的请求格式不同，返回格式也不同。 如果这些差异进入业务代码，业务代码就会变得很脏。 比如： ```python if provider == \"openai\": content = response.choices[0].message.content elif provider == \"kimi\": content = response[\"dat"
-                ],
-                [
-                    "ev_9406c30bf9904884974add9d821ccca1",
-                    "src_8ebc186e03344713bf32116832510c6e",
-                    "ac6913833d5ff5fd192cda657f9a5791b3367a82c3f8c7c284550f0feb056370",
-                    "section=六、Strategy 策略模式：把变化点变成可替换零件; chars=5671-6245",
-                    "chunk 怎么切\nsummary 怎么生成\nclaim 怎么抽取\n检索结果怎么排序\nprompt 怎么组织\n报告怎么生成\n```\n\n这些都是变化点。\n\n如果你把这些逻辑全部写进一个大函数里：\n\n```python\ndef process_source(source):\n    # parse\n    # chunk\n    # summarize\n    # extract claims\n    # store\n    # index\n```\n\n一开始很快，后面会很痛苦。\n\n因为每次修改策略，都要动主流程。\n\nStrategy 的做法是：\n\n> **把容易变化的算法、规则、prompt、流程步骤，抽成可替换策略。**\n\n比如 chunk 策略：\n\n```python\nclass ChunkStrategy:\n    def split(self, text: str) -> list[Chunk]:\n        ...\n```\n\n然后实现：\n\n```python\nclass FixedSizeChunkStrategy:\n    def split(self, text):\n        ...\n\nclass MarkdownChunkStrategy:\n    def split(self, text):",
+                    "section=六、Strategy 策略模式：把变化点变成可替换零件; chars=5931-5985",
+                    "Strategy 的做法是：\n\n> **把容易变化的算法、规则、prompt、流程步骤，抽成可替换策略。**",
+                    "chunk 怎么切\nsummary 怎么生成\nclaim 怎么抽取\n检索结果怎么排序\nprompt 怎么组织\n报告怎么生成\n```\n\n这些都是变化点。\n\n如果你把这些逻辑全部写进一个大函数里：\n\n```python\ndef process_source(source):\n    # parse\n    # chunk\n    # summarize\n    # extract claims\n    # store\n    # index\n```\n\n一开始很快，后面会很痛苦。\n\n因为每次修改策略，都要动主流程。",
+                    "比如 chunk 策略：\n\n```python\nclass ChunkStrategy:\n    def split(self, text: str) -> list[Chunk]:\n        ...\n```\n\n然后实现：\n\n```python\nclass FixedSizeChunkStrategy:\n    def split(self, text):\n        ...\n\nclass MarkdownChunkStrategy:\n    def split(self, text):",
+                    "chunk 怎么切\nsummary 怎么生成\nclaim 怎么抽取\n检索结果怎么排序\nprompt 怎么组织\n报告怎么生成\n```\n\n这些都是变化点。\n\n如果你把这些逻辑全部写进一个大函数里：\n\n```python\ndef process_source(source):\n    # parse\n    # chunk\n    # summarize\n    # extract claims\n    # store\n    # index\n```\n\n一开始很快，后面会很痛苦。\n\n因为每次修改策略，都要动主流程。\nStrategy 的做法是：\n\n> **把容易变化的算法、规则、prompt、流程步骤，抽成可替换策略。**\n比如 chunk 策略：\n\n```python\nclass ChunkStrategy:\n    def split(self, text: str) -> list[Chunk]:\n        ...\n```\n\n然后实现：\n\n```python\nclass FixedSizeChunkStrategy:\n    def split(self, text):\n        ...\n\nclass MarkdownChunkStrategy:\n    def split(self, text):",
                     "chunk 怎么切 summary 怎么生成 claim 怎么抽取 检索结果怎么排序 prompt 怎么组织 报告怎么生成 ``` 这些都是变化点。 如果你把这些逻辑全部写进一个大函数里： ```python def process_source(source): # parse # chunk # summarize # extract claims # store # index ``` 一开始很快，后面会很痛苦。 因为每次修改策略，都要动主流程。 strategy 的做法是： > **把容易变化的算法、规则、prompt、流程步骤，抽成可替换策略。** 比如 chunk 策略： ```python class chunkstrategy: def split(self, text: str) -> list[chunk]: ... ``` 然后实现： ```python class fixedsizechunkstrategy: def split(self, text): ... class markdownchunkstrategy: def split(self, text):"
                 ],
                 [
-                    "ev_c4af7765edf14820921674a2160cf490",
-                    "src_8ebc186e03344713bf32116832510c6e",
+                    "ev_355ffe8513374705a774b4deeef7057b",
+                    "src_075fc3750c93d1d34e73b6d1019a11ae",
                     "ac6913833d5ff5fd192cda657f9a5791b3367a82c3f8c7c284550f0feb056370",
-                    "section=七、Command 命令模式：把动作变成可审计对象; chars=7056-7609",
-                    "= \"markdown\":\n    ...\nelif mode == \"semantic\":\n    ...\n```\n\n这时 Strategy 就开始有价值了。\n\n这一节的金句是：\n\n> **Strategy 不是为了预测未来，而是为了收纳已经出现的变化。**\n\n---\n\n# 七、Command 命令模式：把动作变成可审计对象\n\n第四个模式是 Command，命令模式。\n\n在普通业务系统里，Command 可能不是最常见的模式。\n但在 Agent 和 AI Coding 中，它非常重要。\n\n原因很简单：\n\n> **Agent 最大的问题之一，是它做了什么必须可见、可审计、可回放。**\n\n比如一个威胁情报 Agent 做日报，它可能会执行这些动作：\n\n```text\n读取 RSS\n筛选资讯\n调用模型摘要\n生成日报\n写入文件\n发送企业微信\n创建工单\n```\n\n如果这些动作都是普通函数直接调用，过程就很容易变黑盒。\n\n比如：\n\n```python\ngenerate_report()\nsend_wecom()\ncreate_ticket()\n```\n\n最后只看到结果，不知道每一步的输入输出是什么。\n\nCommand 的做法是把动作结构化。\n\n例如：\n\n```json\n{\n  \"command\":",
-                    "= \"markdown\": ... elif mode == \"semantic\": ... ``` 这时 strategy 就开始有价值了。 这一节的金句是： > **strategy 不是为了预测未来，而是为了收纳已经出现的变化。** --- # 七、command 命令模式：把动作变成可审计对象 第四个模式是 command，命令模式。 在普通业务系统里，command 可能不是最常见的模式。 但在 agent 和 ai coding 中，它非常重要。 原因很简单： > **agent 最大的问题之一，是它做了什么必须可见、可审计、可回放。** 比如一个威胁情报 agent 做日报，它可能会执行这些动作： ```text 读取 rss 筛选资讯 调用模型摘要 生成日报 写入文件 发送企业微信 创建工单 ``` 如果这些动作都是普通函数直接调用，过程就很容易变黑盒。 比如： ```python generate_report() send_wecom() create_ticket() ``` 最后只看到结果，不知道每一步的输入输出是什么。 command 的做法是把动作结构化。 例如： ```json { \"command\":"
-                ],
-                [
-                    "ev_9152b46291c24464bbe5822f73d69626",
-                    "src_8ebc186e03344713bf32116832510c6e",
-                    "ac6913833d5ff5fd192cda657f9a5791b3367a82c3f8c7c284550f0feb056370",
-                    "section=八、Observer 观察者模式：让核心逻辑只发事件，不关心谁在看; chars=8795-9353",
-                    "任务\")\n    \n    result = call_llm()\n    \n    print(\"任务完成\")\n    tui.update_result(result)\n```\n\n看起来没问题，但这里有一个严重问题：\n\n**核心逻辑和展示逻辑耦合了。**\n\n也就是说，任务执行模块不仅负责执行任务，还负责：\n\n```text\n打印\n日志\nTUI 刷新\n进度显示\n错误展示\n```\n\n以后你想换 TUI，可能要改 runtime。\n你想改日志格式，可能要改业务流程。\n你想增加 Web UI，又要把主流程翻出来改。\n\nObserver 的做法是：\n\n> **核心流程只发事件，不关心谁订阅。**\n\n例如：\n\n```text\ntask_started\nllm_call_started\nllm_token_received\ntool_called\nstep_completed\ntask_failed\ntask_completed\n```\n\nRuntime 只负责：\n\n```python\nevent_bus.emit(\"task_started\", data)\nevent_bus.emit(\"tool_called\", data)\nevent_bus.emit(\"task_completed\", data)\n`",
-                    "任务\") result = call_llm() print(\"任务完成\") tui.update_result(result) ``` 看起来没问题，但这里有一个严重问题： **核心逻辑和展示逻辑耦合了。** 也就是说，任务执行模块不仅负责执行任务，还负责： ```text 打印 日志 tui 刷新 进度显示 错误展示 ``` 以后你想换 tui，可能要改 runtime。 你想改日志格式，可能要改业务流程。 你想增加 web ui，又要把主流程翻出来改。 observer 的做法是： > **核心流程只发事件，不关心谁订阅。** 例如： ```text task_started llm_call_started llm_token_received tool_called step_completed task_failed task_completed ``` runtime 只负责： ```python event_bus.emit(\"task_started\", data) event_bus.emit(\"tool_called\", data) event_bus.emit(\"task_completed\", data) `"
-                ],
-                [
-                    "ev_59eacfa36c254e639eff3fd717597da1",
-                    "src_8ebc186e03344713bf32116832510c6e",
-                    "ac6913833d5ff5fd192cda657f9a5791b3367a82c3f8c7c284550f0feb056370",
-                    "section=九、State 状态模式：避免流程被布尔值拖垮; chars=10244-10803",
-                    "机。\n\n比如漏洞公告的流程：\n\n```text\nDraft\nReviewPending\nApproved\nPublished\nArchived\n```\n\n威胁情报日报：\n\n```text\nCollected\nFiltered\nSummarized\nDrafted\nReviewPending\nApproved\nPushed\n```\n\nAgent 执行任务：\n\n```text\nPending\nRunning\nWaitingForTool\nVerifying\nCompleted\nFailed\nRetrying\n```\n\nState 的作用是：\n\n> **明确当前处于哪一步，以及下一步允许去哪。**\n\n例如：\n\n```python\nallowed_transitions = {\n    \"Draft\": [\"ReviewPending\"],\n    \"ReviewPending\": [\"Approved\", \"Draft\"],\n    \"Approved\": [\"Published\"],\n    \"Published\": [\"Archived\"],\n}\n```\n\n这样 Codex 在修改流程时，也能看到规则。\n\n你可以要求：\n\n> 不允许从 Draft 直接进入 Published。\n> Published",
-                    "机。 比如漏洞公告的流程： ```text draft reviewpending approved published archived ``` 威胁情报日报： ```text collected filtered summarized drafted reviewpending approved pushed ``` agent 执行任务： ```text pending running waitingfortool verifying completed failed retrying ``` state 的作用是： > **明确当前处于哪一步，以及下一步允许去哪。** 例如： ```python allowed_transitions = { \"draft\": [\"reviewpending\"], \"reviewpending\": [\"approved\", \"draft\"], \"approved\": [\"published\"], \"published\": [\"archived\"], } ``` 这样 codex 在修改流程时，也能看到规则。 你可以要求： > 不允许从 draft 直接进入 published。 > published"
-                ],
-                [
-                    "ev_23b388d2090f4a3e8dc6311ae886ffa7",
-                    "src_8ebc186e03344713bf32116832510c6e",
-                    "ac6913833d5ff5fd192cda657f9a5791b3367a82c3f8c7c284550f0feb056370",
-                    "section=十三、这些模式如何组合使用？; chars=15510-16057",
-                    "-> Observer\nToolProxy           -> Proxy\n```\n\n一个 TUI 系统可以这样设计：\n\n```text\nRuntime emits events        -> Observer\nTUI subscribes events       -> Observer\nCommand actions             -> Command\nState display               -> State\n```\n\n这里有一个非常重要的经验：\n\n> **模式不是一个一个摆上去的，而是围绕变化点自然长出来的。**\n\n你不要问：\n\n“我要不要用设计模式？”\n\n你应该问：\n\n```text\n哪里会变化？\n哪里不该被影响？\n哪里需要统一接口？\n哪里需要审计？\n哪里需要替换？\n哪里需要生命周期？\n```\n\n答案出来之后，模式自然就出来了。\n\n这一节的金句是：\n\n> **先找变化点，再选设计模式。不要先选模式，再找地方安放。**\n\n---\n\n# 十四、AI Coding 中的模块化检查表\n\n当你用 Codex Plan mode 设计一个功能时，可以让它按下面的问题思考。\n\n第一，最小闭环是什么？\n\n```text\n输入是什么？",
-                    "-> observer toolproxy -> proxy ``` 一个 tui 系统可以这样设计： ```text runtime emits events -> observer tui subscribes events -> observer command actions -> command state display -> state ``` 这里有一个非常重要的经验： > **模式不是一个一个摆上去的，而是围绕变化点自然长出来的。** 你不要问： “我要不要用设计模式？” 你应该问： ```text 哪里会变化？ 哪里不该被影响？ 哪里需要统一接口？ 哪里需要审计？ 哪里需要替换？ 哪里需要生命周期？ ``` 答案出来之后，模式自然就出来了。 这一节的金句是： > **先找变化点，再选设计模式。不要先选模式，再找地方安放。** --- # 十四、ai coding 中的模块化检查表 当你用 codex plan mode 设计一个功能时，可以让它按下面的问题思考。 第一，最小闭环是什么？ ```text 输入是什么？"
-                ],
-                [
-                    "ev_80a08d15c4494807b0622b63eca32bb5",
-                    "src_8ebc186e03344713bf32116832510c6e",
-                    "ac6913833d5ff5fd192cda657f9a5791b3367a82c3f8c7c284550f0feb056370",
-                    "section=十七、总结：AI Coding 时代的模块化原则; chars=19152-19626",
-                    "事件通知解耦，用 Observer。\n横切增强能力，用 Decorator \/ Proxy。\n树状结构处理，用 Composite。\n配置创建对象，用 Factory Method。\n```\n\n再压缩成一句话：\n\n> **Facade 管入口，Adapter 管翻译，Strategy 管变化，Command 管动作，State 管流程，Observer 管通知，Proxy 管保护，Composite 管树，Factory 管创建。**\n\n这是今天最适合作为结尾的金句。\n\n如果你只记住一个原则，那就是：\n\n> **模块化不是把代码切碎，而是把变化关起来。**\n\n如果你只记住一个 AI Coding 的实践建议，那就是：\n\n> **每次让 AI 写代码前，先问它：这次修改应该被限制在哪几个模块里？哪些模块绝对不应该被影响？**\n\n这才是 AI Coding 时代最重要的工程能力。\n\n不是让 AI 写更多代码，而是让 AI 在正确的边界内写代码。\n\n最后用一句话收束：\n\n> **好的模块化，是给人看的地图，也是给 AI 走路的护栏。**",
-                    "事件通知解耦，用 observer。 横切增强能力，用 decorator \/ proxy。 树状结构处理，用 composite。 配置创建对象，用 factory method。 ``` 再压缩成一句话： > **facade 管入口，adapter 管翻译，strategy 管变化，command 管动作，state 管流程，observer 管通知，proxy 管保护，composite 管树，factory 管创建。** 这是今天最适合作为结尾的金句。 如果你只记住一个原则，那就是： > **模块化不是把代码切碎，而是把变化关起来。** 如果你只记住一个 ai coding 的实践建议，那就是： > **每次让 ai 写代码前，先问它：这次修改应该被限制在哪几个模块里？哪些模块绝对不应该被影响？** 这才是 ai coding 时代最重要的工程能力。 不是让 ai 写更多代码，而是让 ai 在正确的边界内写代码。 最后用一句话收束： > **好的模块化，是给人看的地图，也是给 ai 走路的护栏。**"
+                    "section=七、Command 命令模式：把动作变成可审计对象; chars=7304-7351",
+                    "原因很简单：\n\n> **Agent 最大的问题之一，是它做了什么必须可见、可审计、可回放。**",
+                    "elif mode == \"markdown\":\n    ...\nelif mode == \"semantic\":\n    ...\n```\n\n这时 Strategy 就开始有价值了。\n\n这一节的金句是：\n\n> **Strategy 不是为了预测未来，而是为了收纳已经出现的变化。**\n\n---\n\n# 七、Command 命令模式：把动作变成可审计对象\n\n第四个模式是 Command，命令模式。\n\n在普通业务系统里，Command 可能不是最常见的模式。\n但在 Agent 和 AI Coding 中，它非常重要。",
+                    "比如一个威胁情报 Agent 做日报，它可能会执行这些动作：\n\n```text\n读取 RSS\n筛选资讯\n调用模型摘要\n生成日报\n写入文件\n发送企业微信\n创建工单\n```\n\n如果这些动作都是普通函数直接调用，过程就很容易变黑盒。\n\n比如：\n\n```python\ngenerate_report()\nsend_wecom()\ncreate_ticket()\n```\n\n最后只看到结果，不知道每一步的输入输出是什么。\n\nCommand 的做法是把动作结构化。\n\n例如：\n\n```json\n{\n  \"command\": \"g",
+                    "elif mode == \"markdown\":\n    ...\nelif mode == \"semantic\":\n    ...\n```\n\n这时 Strategy 就开始有价值了。\n\n这一节的金句是：\n\n> **Strategy 不是为了预测未来，而是为了收纳已经出现的变化。**\n\n---\n\n# 七、Command 命令模式：把动作变成可审计对象\n\n第四个模式是 Command，命令模式。\n\n在普通业务系统里，Command 可能不是最常见的模式。\n但在 Agent 和 AI Coding 中，它非常重要。\n原因很简单：\n\n> **Agent 最大的问题之一，是它做了什么必须可见、可审计、可回放。**\n比如一个威胁情报 Agent 做日报，它可能会执行这些动作：\n\n```text\n读取 RSS\n筛选资讯\n调用模型摘要\n生成日报\n写入文件\n发送企业微信\n创建工单\n```\n\n如果这些动作都是普通函数直接调用，过程就很容易变黑盒。\n\n比如：\n\n```python\ngenerate_report()\nsend_wecom()\ncreate_ticket()\n```\n\n最后只看到结果，不知道每一步的输入输出是什么。\n\nCommand 的做法是把动作结构化。\n\n例如：\n\n```json\n{\n  \"command\": \"g",
+                    "elif mode == \"markdown\": ... elif mode == \"semantic\": ... ``` 这时 strategy 就开始有价值了。 这一节的金句是： > **strategy 不是为了预测未来，而是为了收纳已经出现的变化。** --- # 七、command 命令模式：把动作变成可审计对象 第四个模式是 command，命令模式。 在普通业务系统里，command 可能不是最常见的模式。 但在 agent 和 ai coding 中，它非常重要。 原因很简单： > **agent 最大的问题之一，是它做了什么必须可见、可审计、可回放。** 比如一个威胁情报 agent 做日报，它可能会执行这些动作： ```text 读取 rss 筛选资讯 调用模型摘要 生成日报 写入文件 发送企业微信 创建工单 ``` 如果这些动作都是普通函数直接调用，过程就很容易变黑盒。 比如： ```python generate_report() send_wecom() create_ticket() ``` 最后只看到结果，不知道每一步的输入输出是什么。 command 的做法是把动作结构化。 例如： ```json { \"command\": \"g"
                 ]
             ]
         },
@@ -452,15 +420,15 @@
             "name": "sources",
             "withoutRowId": false,
             "strict": false,
-            "ddl": "CREATE TABLE sources (\n    source_id TEXT PRIMARY KEY,\n    type TEXT NOT NULL,\n    title TEXT NOT NULL,\n    uri TEXT NOT NULL,\n    version_id TEXT NOT NULL,\n    imported_at TEXT NOT NULL,\n    source_summary TEXT\n)",
+            "ddl": "CREATE TABLE sources (\n    source_id TEXT NOT NULL,\n    type TEXT NOT NULL,\n    title TEXT NOT NULL,\n    uri TEXT NOT NULL,\n    version_id TEXT NOT NULL,\n    imported_at TEXT NOT NULL,\n    source_summary TEXT,\n    PRIMARY KEY (source_id, version_id),\n    UNIQUE (uri, version_id)\n)",
             "columns": [
                 {
                     "name": "source_id",
                     "type": "TEXT",
                     "constraints": [
                         {
-                            "type": "PRIMARY KEY",
-                            "definition": "PRIMARY KEY"
+                            "type": "NOT NULL",
+                            "definition": "NOT NULL"
                         }
                     ]
                 },
@@ -519,33 +487,25 @@
                     "type": "TEXT"
                 }
             ],
+            "constraints": [
+                {
+                    "type": "PRIMARY KEY",
+                    "definition": "PRIMARY KEY (source_id, version_id)"
+                },
+                {
+                    "type": "UNIQUE",
+                    "definition": "UNIQUE (uri, version_id)\n"
+                }
+            ],
             "rows": [
                 [
-                    "src_2b821294c1e04cd484aabdeecb1ffb5a",
+                    "src_075fc3750c93d1d34e73b6d1019a11ae",
                     "markdown",
-                    "test_doc",
-                    "\/Users\/bg\/project\/knowledgeag_card\/test_doc.md",
+                    "test_doc.md",
+                    "\/Users\/biguncle\/project\/knowledgeag\/tests\/test_data\/test_doc.md",
                     "ac6913833d5ff5fd192cda657f9a5791b3367a82c3f8c7c284550f0feb056370",
-                    "2026-04-26T11:16:35.785412+00:00",
-                    null
-                ],
-                [
-                    "src_e4bea15c3b2148d8ab457ea83d46788e",
-                    "markdown",
-                    "test_doc",
-                    "\/mnt\/d\/Work\/01_processing\/knowledgeag\/test_doc.md",
-                    "ac6913833d5ff5fd192cda657f9a5791b3367a82c3f8c7c284550f0feb056370",
-                    "2026-04-27T01:46:33.785941+00:00",
-                    null
-                ],
-                [
-                    "src_8ebc186e03344713bf32116832510c6e",
-                    "markdown",
-                    "test_doc",
-                    "\/mnt\/d\/Work\/01_processing\/knowledgeag\/test_doc.md",
-                    "ac6913833d5ff5fd192cda657f9a5791b3367a82c3f8c7c284550f0feb056370",
-                    "2026-04-27T01:47:20.460107+00:00",
-                    "AI Coding 时代模块化设计的核心原则、关键设计模式及其应用场景"
+                    "2026-04-29T15:51:33.138821+00:00",
+                    "主题：AI Coding 时代的模块化设计与核心设计模式\n核心观点：模块化核心价值是控制变更半径，将变化限制在特定模块内，避免全局影响；AI Coding 时代昂贵的是修改范围可控性、边界清晰度及 AI 对边界的理解；九大关键模式：Facade、Adapter、Strategy、Command、Observer、State、Decorator\/Proxy、Composite、Factory Method；设计模式应围绕变化点自然产生，而非预先强行套用；谨慎使用单例、抽象工厂等模式，避免隐藏依赖和过度设计；模块化是给 AI 设置的护栏，确保修改限制在正确边界内\n适用场景：使用 AI 编程工具（Cursor\/Codex\/Claude Code）进行项目开发；需要集成多种外部服务（LLM Provider\/数据库\/API）的系统；Agent 开发中需要审计、控制动作及管理生命周期的场景；业务策略频繁变化（如摘要策略\/切分策略）的知识库或处理流程；需要解耦核心逻辑与旁路系统（日志\/UI\/审计）的架构设计\n主要结构：AI Coding 时代模块化设计的重要性与核心价值；模块化本质：控制变更半径与边界定义；九大常用设计模式详解与适用场景；设计模式的组合使用原则与检查表；威胁情报日报系统模块化实战案例；需谨慎使用的设计模式与总结原则"
                 ]
             ]
         }

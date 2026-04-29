@@ -78,6 +78,7 @@ def test_evidence_fetcher_returns_exact_source_version(tmp_path):
             source_id=source1.source_id,
             source_version=source1.version_id,
             loc='line:1',
+            evidence_quote='version one',
             content='version one',
         )
     ])

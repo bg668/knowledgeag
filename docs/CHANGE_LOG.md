@@ -1,5 +1,59 @@
 # CHANGE_LOG.md
 
+### 2026-04-29 - Evidence 拆分为 Quote + Context
+
+#### 修改目标
+
+完成 REQ-KM-05：将 Evidence 从单一上下文窗口拆为最小原文引用和前后辅助上下文，并让 loc 指向 quote 本身。
+
+#### 修改文件
+
+- `src/knowledgeag_card/domain/models.py`：为 Evidence 增加 `evidence_quote`、`context_before`、`context_after`，保留 `content` 兼容旧调用。
+- `src/knowledgeag_card/storage/sqlite_db.py`、`src/knowledgeag_card/storage/evidence_repository.py`：扩展 evidences 表，旧数据迁移时用 `content` 回填 `evidence_quote`。
+- `src/knowledgeag_card/ingestion/evidence_aligner.py`、`src/knowledgeag_card/runtime/prompt_builder.py`：生成 quote/context，并在回源 prompt 中优先展示 quote。
+- `tests/test_evidence_quote_context.py`、`tests/test_source_versioning.py`、`tests/test_end_to_end.py`：验证文本/代码定位、旧表迁移和端到端 evidence 字段。
+- `docs/PROJECT_CONTEXT.md`、`docs/REQUIREMENTS.md`、`docs/CHANGE_LOG.md`：同步项目地图、需求状态和变更记录。
+
+#### 未修改范围
+
+未修改入口文件、导入主流程顺序、问答主流程顺序、配置装配、KnowledgeAgent 接口、Claim/Card 绑定逻辑和检索排序逻辑。
+
+#### 验证方式
+
+- `uv run pytest tests/test_evidence_quote_context.py tests/test_source_versioning.py tests/test_end_to_end.py -q`
+- `uv run pytest -q`
+
+#### 剩余风险
+
+旧库中的历史 evidence 只能把旧 `content` 整体回填为 `evidence_quote`，无法自动恢复真实的 quote/context 边界；新导入数据会生成拆分后的字段。
+
+### 2026-04-29 - 修复 Card-Claim-Evidence 绑定关系
+
+#### 修改目标
+
+完成 REQ-KM-04：确保 card 的每个 core_point 逐字绑定唯一 claim，并同序写入 claim_ids；过滤重复 claim 集合和缺少 evidence 的 claim/card。
+
+#### 修改文件
+
+- `src/knowledgeag_card/ingestion/card_organizer.py`：收紧 card 输出过滤，要求所有 core_points 都能唯一匹配非空 evidence 的 claim，并按 core_points 顺序生成 claim_ids。
+- `tests/test_card_organizer.py`：验证逐点绑定、同序追溯、重复 claim 集合过滤、空 evidence claim 过滤。
+- `tests/test_end_to_end.py`：验证端到端生成的 cards 满足 core_points 与 claim_ids 同序一致，且 claim evidence 非空。
+- `docs/REQUIREMENTS.md`：将 REQ-KM-04 标记为已完成、待人工核验。
+- `docs/CHANGE_LOG.md`：记录本次修改。
+
+#### 未修改范围
+
+未修改入口文件、导入主流程顺序、领域模型、SQLite schema、配置装配、检索问答流程；未新增 `core_point_claim_ids` 字段。
+
+#### 验证方式
+
+- `uv run pytest tests/test_card_organizer.py tests/test_end_to_end.py -q`
+- `uv run pytest -q`
+
+#### 剩余风险
+
+真实 LLM 若输出 paraphrase 的 core_points 会被整卡过滤；这是本次按数据一致性优先做出的约束。
+
 ### 2026-04-29 - 支持主题化 KnowledgeCard
 
 #### 修改目标

@@ -15,8 +15,9 @@ class EvidenceRepository:
             conn.executemany(
                 """
                 INSERT OR REPLACE INTO evidences
-                (evidence_id, source_id, source_version, loc, content, normalized_content)
-                VALUES (?, ?, ?, ?, ?, ?)
+                (evidence_id, source_id, source_version, loc, evidence_quote,
+                 context_before, context_after, content, normalized_content)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [
                     (
@@ -24,6 +25,9 @@ class EvidenceRepository:
                         e.source_id,
                         e.source_version,
                         e.loc,
+                        e.evidence_quote,
+                        e.context_before,
+                        e.context_after,
                         e.content,
                         e.normalized_content,
                     )
@@ -46,6 +50,9 @@ class EvidenceRepository:
                 source_version=row['source_version'],
                 loc=row['loc'],
                 content=row['content'],
+                evidence_quote=row['evidence_quote'],
+                context_before=row['context_before'],
+                context_after=row['context_after'],
                 normalized_content=row['normalized_content'],
             )
             for row in rows

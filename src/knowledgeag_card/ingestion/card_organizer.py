@@ -12,23 +12,34 @@ class CardOrganizer:
         if not claims:
             return []
         raw_cards = self.knowledge_agent.organize_cards(source_title=source.title, claims=[claim.text for claim in claims])
-        claim_by_text = {claim.text: claim for claim in claims}
+        claims_by_text: dict[str, list[Claim]] = {}
+        for claim in claims:
+            if not claim.text or not claim.evidence_ids:
+                continue
+            claims_by_text.setdefault(claim.text, []).append(claim)
+        claim_by_text = {text: matched_claims[0] for text, matched_claims in claims_by_text.items() if len(matched_claims) == 1}
         cards: list[KnowledgeCard] = []
+        seen_claim_sets: set[frozenset[str]] = set()
         for raw in raw_cards:
             core_points = [point.strip() for point in raw.get('core_points', []) if point and point.strip()]
             if not (3 <= len(core_points) <= 7):
                 continue
             matched_claims = []
             seen_claim_ids: set[str] = set()
+            all_points_bound = True
             for point in core_points:
                 claim = claim_by_text.get(point)
                 if claim is None or claim.claim_id in seen_claim_ids:
-                    continue
+                    all_points_bound = False
+                    break
                 matched_claims.append(claim)
                 seen_claim_ids.add(claim.claim_id)
-            if not matched_claims:
+            if not all_points_bound:
                 continue
             claim_ids = [claim.claim_id for claim in matched_claims]
+            claim_set = frozenset(claim_ids)
+            if claim_set in seen_claim_sets:
+                continue
             evidence_ids = []
             seen_evidence_ids: set[str] = set()
             for claim in matched_claims:
@@ -42,6 +53,7 @@ class CardOrganizer:
             contexts = [c for c in raw.get('applicable_contexts', []) if c]
             if not contexts:
                 continue
+            seen_claim_sets.add(claim_set)
             cards.append(
                 KnowledgeCard(
                     card_id=new_id('card'),

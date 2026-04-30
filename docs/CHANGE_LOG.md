@@ -1,5 +1,35 @@
 # CHANGE_LOG.md
 
+### 2026-04-30 - LLM 可观测与 Run 复盘
+
+#### 修改目标
+
+为 `/ingest`、`/ask` 建立独立观测日志和 `run_id` 主线，让 TUI 展示 provider 显式返回的 thinking/output，并将 `/review` 改为从观测日志按 `run_id` 自动生成复盘卡。
+
+#### 修改文件
+
+- `src/knowledgeag_card/observability/`：新增独立观测 SQLite、轻量 LLMEvent 和运行上下文。
+- `src/knowledgeag_card/runtime/agent_app.py`、`src/knowledgeag_card/runtime/tui_app.py`：为 ingest/ask 包裹 run 生命周期，新增 `/runs`，将 `/review` 改为接收 `run_id`。
+- `src/knowledgeag_card/agents/`、`src/knowledgeag_card/runtime/answer_service.py`、`src/knowledgeag_card/runtime/agent_loop.py`：记录 LLM 调用并区分 `thinking_delta` 与 `output_delta`。
+- `src/knowledgeag_card/ingestion/ingest_service.py`、`src/knowledgeag_card/memory/task_review_service.py`：记录 source artifact、运行指标，并从观测日志生成复盘 Source / Evidence / Claim / KnowledgeCard。
+- `src/knowledgeag_card/app/config.py`、`src/knowledgeag_card/app/container.py`、`config.json.example`：新增 `observability.db_path` 并集中装配 recorder。
+- `tests/test_observability.py`、`tests/test_task_review.py`、`tests/test_app_config.py`、`tests/test_knowledge_agent_boundary.py`：覆盖观测库、事件流、run 复盘和配置。
+- `docs/REQUIREMENTS.md`、`docs/PROJECT_CONTEXT.md`、`docs/CHANGE_LOG.md`：同步需求、项目地图和变更记录。
+
+#### 未修改范围
+
+未修改 KnowledgeCard / Claim / Evidence / Source 领域字段；未把观测日志写入知识库 SQLite；未改变 ingest / ask 主流程顺序；未引入多 Agent 编排；超大原文仍只记录路径、hash、长度和预览。
+
+#### 验证方式
+
+- `.venv\Scripts\python.exe -m pytest tests\test_observability.py tests\test_app_config.py tests\test_knowledge_agent_boundary.py tests\test_task_review.py -q`
+- `.venv\Scripts\python.exe -m pytest tests\test_task_review.py tests\test_quality_metrics.py tests\test_end_to_end.py -q`
+- `.venv\Scripts\python.exe -m pytest -q`
+
+#### 剩余风险
+
+真实 paimonsdk provider 的 thinking block 类型仍需用实际模型抽样核验；第一版长期保留观测日志，不提供删除或压缩策略；TUI 展示为轻量预览，不做复杂分屏历史浏览。
+
 ### 2026-04-30 - 支持任务后复盘沉淀
 
 #### 修改目标

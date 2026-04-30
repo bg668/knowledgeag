@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Callable
 
 from knowledgeag_card.domain.models import ClaimDraft, ReadUnit
+from knowledgeag_card.observability.events import LLMEvent
 
 
 class KnowledgeAgent(ABC):
@@ -50,5 +51,6 @@ class KnowledgeAgent(ABC):
         *,
         prompt: str,
         on_delta: Callable[[str], None] | None = None,
+        on_event: Callable[[LLMEvent], None] | None = None,
     ) -> str:
         raise NotImplementedError

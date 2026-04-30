@@ -14,6 +14,7 @@ from knowledgeag_card.ingestion.source_summarizer import SourceSummarizer
 from knowledgeag_card.ingestion.source_loader import SourceLoader
 from knowledgeag_card.ingestion.structural_splitter import StructuralSplitter
 from knowledgeag_card.memory.task_review_service import TaskReviewService
+from knowledgeag_card.observability.recorder import ObservabilityRecorder
 from knowledgeag_card.retrieval.card_ranker import CardRanker
 from knowledgeag_card.retrieval.card_retriever import CardRetriever
 from knowledgeag_card.retrieval.claim_retriever import ClaimRetriever
@@ -42,6 +43,7 @@ class AppContainer:
     def __init__(self, config: AppConfig) -> None:
         self.config = config
         self.db = Database(config.db_path)
+        self.observability = ObservabilityRecorder(config.observability.db_path)
         self.sources = SourceRepository(self.db)
         self.evidences = EvidenceRepository(self.db)
         self.claims = ClaimRepository(self.db)
@@ -103,6 +105,7 @@ class AppContainer:
             evidence_repository=self.evidences,
             claim_repository=self.claims,
             card_repository=self.cards,
+            observability=self.observability,
         )
 
     @classmethod

@@ -98,6 +98,19 @@ def test_loads_default_knowledge_agent_config(tmp_path, monkeypatch):
     assert config.knowledge_agent.allow_tools is False
     assert config.knowledge_agent.max_steps == 1
     assert config.knowledge_agent.tools_for('answer') == []
+    assert config.observability.db_path == 'data/logs/knowledgeag_observability.sqlite3'
+
+
+def test_loads_observability_db_path(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv('QWEN_API_KEY', raising=False)
+    config = base_config()
+    config['observability'] = {'db_path': 'tmp/obs.sqlite3'}
+    write_config(tmp_path, config)
+
+    loaded = AppConfig.load()
+
+    assert loaded.observability.db_path == 'tmp/obs.sqlite3'
 
 
 def test_loads_node_level_knowledge_agent_tools(tmp_path, monkeypatch):

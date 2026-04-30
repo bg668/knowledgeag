@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from knowledgeag_card.domain.models import IngestResult
+from knowledgeag_card.observability.context import current_context
 
 
 class IngestService:
@@ -55,6 +56,7 @@ class IngestService:
             source, text = self.source_loader.load(target)
             source = self.sources.resolve_for_import(source)
             self.sources.save(source)
+            self._record_source_artifact(source=source, text=text)
 
             read_plan = self.read_planner.plan(source, text, self.model_context_window)
             if read_plan.mode.value == 'structured':
@@ -86,6 +88,14 @@ class IngestService:
             self.evidences.save_many(evidences)
             self.claims.save_many(claims)
             self.cards.save_many(cards)
+            self._record_ingest_metrics(
+                evidence_count=len(evidences),
+                claim_count=len(claims),
+                card_count=len(cards),
+                missing_topic_count=len(topic_coverage.missing_topics),
+                covered_section_count=len(source_coverage.covered_sections),
+                total_section_count=len(source_coverage.source_sections),
+            )
             results.append(
                 IngestResult(
                     source=source,
@@ -97,3 +107,43 @@ class IngestService:
                 )
             )
         return results
+
+    def _record_source_artifact(self, *, source, text: str) -> None:
+        context = current_context()
+        if context is None:
+            return
+        context.recorder.record_artifact(
+            run_id=context.run_id,
+            artifact_type='source',
+            uri=source.uri,
+            content=text,
+            metadata={
+                'source_id': source.source_id,
+                'source_version': source.version_id,
+                'source_type': source.type.value,
+                'title': source.title,
+            },
+        )
+
+    def _record_ingest_metrics(
+        self,
+        *,
+        evidence_count: int,
+        claim_count: int,
+        card_count: int,
+        missing_topic_count: int,
+        covered_section_count: int,
+        total_section_count: int,
+    ) -> None:
+        context = current_context()
+        if context is None:
+            return
+        for name, value in {
+            'evidence_count': evidence_count,
+            'claim_count': claim_count,
+            'card_count': card_count,
+            'missing_topic_count': missing_topic_count,
+            'covered_section_count': covered_section_count,
+            'total_section_count': total_section_count,
+        }.items():
+            context.recorder.record_metric(run_id=context.run_id, name=name, value=value)

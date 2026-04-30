@@ -67,8 +67,14 @@ class KnowledgeAgentConfig:
 
 
 @dataclass(slots=True)
+class ObservabilityConfig:
+    db_path: str
+
+
+@dataclass(slots=True)
 class AppConfig:
     db_path: str
+    observability: ObservabilityConfig
     model: ModelConfig
     ingest: IngestConfig
     retrieval: RetrievalConfig
@@ -95,6 +101,7 @@ class AppConfig:
             raw = json.load(f)
 
         storage = raw.get('storage', {})
+        observability = raw.get('observability', {})
         model, api_key = _load_model_config(raw)
         ingest = raw.get('ingest', {})
         retrieval = raw.get('retrieval', {})
@@ -105,6 +112,9 @@ class AppConfig:
 
         return cls(
             db_path=storage.get('db_path', 'data/storage/knowledgeag.sqlite3'),
+            observability=ObservabilityConfig(
+                db_path=observability.get('db_path', 'data/logs/knowledgeag_observability.sqlite3'),
+            ),
             model=model,
             ingest=IngestConfig(
                 whole_document_ratio=float(ingest.get('whole_document_ratio', 0.7)),

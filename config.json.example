@@ -2,6 +2,9 @@
   "storage": {
     "db_path": "data/storage/knowledgeag.sqlite3"
   },
+  "observability": {
+    "db_path": "data/logs/knowledgeag_observability.sqlite3"
+  },
   "models": {
     "mode": "qwen3.5-plus",
     "providers": {

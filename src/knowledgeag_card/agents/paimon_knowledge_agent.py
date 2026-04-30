@@ -3,11 +3,14 @@ from __future__ import annotations
 import asyncio
 import importlib
 import json
+import time
 from typing import Any, Callable
 
 from knowledgeag_card.agents.base import KnowledgeAgent
 from knowledgeag_card.app.config import AppConfig
 from knowledgeag_card.domain.models import ClaimDraft, EvidenceAnchor, ReadUnit
+from knowledgeag_card.observability.context import current_context, emit_llm_event
+from knowledgeag_card.observability.events import LLMEvent
 from knowledgeag_card.tools.registry import ToolRegistry
 
 
@@ -148,8 +151,20 @@ class PaimonKnowledgeAgent(KnowledgeAgent):
         data = self._parse_json(raw)
         return list(data.get('cards', []))
 
-    def answer(self, *, prompt: str, on_delta: Callable[[str], None] | None = None) -> str:
-        return self._run_once(node='answer', system_prompt=self.config.prompts.answer, user_prompt=prompt, on_delta=on_delta)
+    def answer(
+        self,
+        *,
+        prompt: str,
+        on_delta: Callable[[str], None] | None = None,
+        on_event: Callable[[LLMEvent], None] | None = None,
+    ) -> str:
+        return self._run_once(
+            node='answer',
+            system_prompt=self.config.prompts.answer,
+            user_prompt=prompt,
+            on_delta=on_delta,
+            on_event=on_event,
+        )
 
     def _run_once(
         self,
@@ -158,10 +173,17 @@ class PaimonKnowledgeAgent(KnowledgeAgent):
         system_prompt: str,
         user_prompt: str,
         on_delta: Callable[[str], None] | None = None,
+        on_event: Callable[[LLMEvent], None] | None = None,
     ) -> str:
         try:
             return asyncio.run(
-                self._run_once_async(node=node, system_prompt=system_prompt, user_prompt=user_prompt, on_delta=on_delta)
+                self._run_once_async(
+                    node=node,
+                    system_prompt=system_prompt,
+                    user_prompt=user_prompt,
+                    on_delta=on_delta,
+                    on_event=on_event,
+                )
             )
         except RuntimeError as exc:
             if 'asyncio.run() cannot be called from a running event loop' not in str(exc):
@@ -169,7 +191,13 @@ class PaimonKnowledgeAgent(KnowledgeAgent):
             loop = asyncio.new_event_loop()
             try:
                 return loop.run_until_complete(
-                    self._run_once_async(node=node, system_prompt=system_prompt, user_prompt=user_prompt, on_delta=on_delta)
+                    self._run_once_async(
+                        node=node,
+                        system_prompt=system_prompt,
+                        user_prompt=user_prompt,
+                        on_delta=on_delta,
+                        on_event=on_event,
+                    )
                 )
             finally:
                 loop.close()
@@ -181,19 +209,45 @@ class PaimonKnowledgeAgent(KnowledgeAgent):
         system_prompt: str,
         user_prompt: str,
         on_delta: Callable[[str], None] | None = None,
+        on_event: Callable[[LLMEvent], None] | None = None,
     ) -> str:
-        agent = self._build_agent(node=node, system_prompt=system_prompt, on_delta=on_delta)
-        await agent.prompt(user_prompt)
-        await agent.wait_for_idle()
-        message = agent.state.messages[-1]
-        if not isinstance(message, self._AssistantMessage):
-            raise RuntimeError('last message is not assistant')
-        text = ''.join(block.text for block in message.content if isinstance(block, self._TextContent)).strip()
-        if message.error_message:
-            raise RuntimeError(message.error_message)
-        return text
+        started = time.perf_counter()
+        raw_output = ''
+        thinking = ''
+        error = None
+        try:
+            agent = self._build_agent(node=node, system_prompt=system_prompt, on_delta=on_delta, on_event=on_event)
+            await agent.prompt(user_prompt)
+            await agent.wait_for_idle()
+            message = agent.state.messages[-1]
+            if not isinstance(message, self._AssistantMessage):
+                raise RuntimeError('last message is not assistant')
+            raw_output, thinking = self._message_parts(message)
+            if message.error_message:
+                raise RuntimeError(message.error_message)
+            return raw_output
+        except Exception as exc:
+            error = str(exc)
+            raise
+        finally:
+            self._record_llm_call(
+                node=node,
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                raw_output=raw_output,
+                thinking=thinking,
+                error=error,
+                duration_ms=int((time.perf_counter() - started) * 1000),
+            )
 
-    def _build_agent(self, *, node: str, system_prompt: str, on_delta: Callable[[str], None] | None = None):
+    def _build_agent(
+        self,
+        *,
+        node: str,
+        system_prompt: str,
+        on_delta: Callable[[str], None] | None = None,
+        on_event: Callable[[LLMEvent], None] | None = None,
+    ):
         client = self._AsyncOpenAI(api_key=self.config.api_key, base_url=self.config.model.base_url or None)
         adapter = self._OpenAIAdapter(
             client,
@@ -225,25 +279,94 @@ class PaimonKnowledgeAgent(KnowledgeAgent):
                 },
             )
         )
-        if on_delta is not None:
-            current = {'length': 0}
+        context = current_context()
+        should_subscribe = on_delta is not None or on_event is not None or (
+            context is not None and context.on_event is not None
+        )
+        if should_subscribe:
+            current = {'output': {}, 'thinking': {}}
 
             def listener(event, cancel_token):
                 if event.type == 'message_start':
-                    current['length'] = 0
+                    current['output'] = {}
+                    current['thinking'] = {}
                 elif event.type == 'message_update':
-                    for block in event.message.content:
-                        if not isinstance(block, self._TextContent):
+                    for index, block in enumerate(event.message.content):
+                        kind = self._block_kind(block)
+                        if kind is None:
                             continue
-                        full = block.text or ''
-                        if len(full) > current['length']:
-                            on_delta(full[current['length']:])
-                            current['length'] = len(full)
+                        full = self._block_text(block)
+                        previous_length = current[kind].get(index, 0)
+                        if len(full) <= previous_length:
+                            continue
+                        delta = full[previous_length:]
+                        current[kind][index] = len(full)
+                        event_kind = 'thinking_delta' if kind == 'thinking' else 'output_delta'
+                        emit_llm_event(kind=event_kind, node=node, text=delta, on_event=on_event)
+                        if kind == 'output' and on_delta is not None:
+                            on_delta(delta)
                 elif event.type == 'message_end':
-                    current['length'] = 0
+                    current['output'] = {}
+                    current['thinking'] = {}
 
             agent.subscribe(listener)
         return agent
+
+    def _message_parts(self, message) -> tuple[str, str]:
+        output_parts = []
+        thinking_parts = []
+        for block in message.content:
+            kind = self._block_kind(block)
+            if kind == 'output':
+                output_parts.append(self._block_text(block))
+            elif kind == 'thinking':
+                thinking_parts.append(self._block_text(block))
+        return ''.join(output_parts).strip(), ''.join(thinking_parts).strip()
+
+    def _block_kind(self, block) -> str | None:
+        if isinstance(block, self._TextContent):
+            return 'output'
+        thinking_content = getattr(self, '_ThinkingContent', None)
+        if thinking_content is not None and isinstance(block, thinking_content):
+            return 'thinking'
+        block_name = block.__class__.__name__.lower()
+        if 'thinking' in block_name or 'reasoning' in block_name:
+            return 'thinking'
+        return None
+
+    @staticmethod
+    def _block_text(block) -> str:
+        for attr in ('text', 'summary', 'content'):
+            value = getattr(block, attr, None)
+            if value:
+                return str(value)
+        return ''
+
+    def _record_llm_call(
+        self,
+        *,
+        node: str,
+        system_prompt: str,
+        user_prompt: str,
+        raw_output: str,
+        thinking: str,
+        error: str | None,
+        duration_ms: int,
+    ) -> None:
+        context = current_context()
+        if context is None:
+            return
+        context.recorder.record_llm_call(
+            run_id=context.run_id,
+            node=node,
+            model=self.config.model.id,
+            system_prompt=system_prompt,
+            input_payload={'prompt_preview': user_prompt[:4000], 'prompt_length': len(user_prompt)},
+            raw_output=raw_output,
+            thinking=thinking or None,
+            error=error,
+            duration_ms=duration_ms,
+        )
 
     def _tools_for_node(self, node: str) -> list:
         if not self.config.knowledge_agent.allow_tools:
@@ -282,6 +405,7 @@ class PaimonKnowledgeAgent(KnowledgeAgent):
         self._AgentOptions = paimonsdk.AgentOptions
         self._ModelInfo = paimonsdk.ModelInfo
         self._TextContent = paimonsdk.TextContent
+        self._ThinkingContent = getattr(paimonsdk, 'ThinkingContent', None)
         self._AssistantMessage = paimonsdk.AssistantMessage
         self._OpenAIAdapter = adapters.OpenAIAdapter
         self._OpenAIRequestConfig = adapters.OpenAIRequestConfig

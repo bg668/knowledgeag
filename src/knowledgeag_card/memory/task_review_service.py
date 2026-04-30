@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-from pathlib import Path
 from typing import Any
 
 from knowledgeag_card.domain.enums import ClaimStatus, SourceType
@@ -17,23 +16,27 @@ class TaskReviewService:
         evidence_repository,
         claim_repository,
         card_repository,
+        observability,
     ) -> None:
         self.sources = source_repository
         self.evidences = evidence_repository
         self.claims = claim_repository
         self.cards = card_repository
+        self.observability = observability
 
-    def review_task(self, path: str | Path) -> IngestResult:
-        review_path = Path(path).resolve()
-        raw_text = review_path.read_text(encoding='utf-8')
-        data = _load_review_json(raw_text)
-        task_title = _text(data.get('task_title')) or review_path.stem
+    def review_task(self, run_id: str) -> IngestResult:
+        bundle = self.observability.get_run_bundle(run_id)
+        if bundle is None:
+            raise ValueError(f'run_id not found: {run_id}')
+        data = _review_data_from_run(bundle)
+        raw_text = json.dumps(data, ensure_ascii=False)
+        task_title = _text(data.get('task_title')) or f'运行复盘：{run_id}'
         source = self.sources.resolve_for_import(
             Source(
                 source_id=new_id('src'),
                 type=SourceType.TEXT,
                 title=task_title,
-                uri=str(review_path),
+                uri=f'observability://runs/{run_id}',
                 version_id=_content_hash(raw_text),
                 imported_at=utcnow(),
                 source_summary=_summary(data, task_title),
@@ -50,11 +53,58 @@ class TaskReviewService:
         return IngestResult(source=source, evidences=evidences, claims=claims, cards=cards)
 
 
-def _load_review_json(raw_text: str) -> dict[str, Any]:
-    data = json.loads(raw_text)
-    if not isinstance(data, dict):
-        raise ValueError('task review JSON must be an object')
-    return data
+def _review_data_from_run(bundle) -> dict[str, Any]:
+    run = bundle.run
+    run_id = run['run_id']
+    metrics = [f"{metric['name']}={metric['value']}" for metric in bundle.metrics]
+    llm_nodes = [call['node'] for call in bundle.llm_calls]
+    artifacts = [artifact['uri'] for artifact in bundle.artifacts]
+    errors = [call['error'] for call in bundle.llm_calls if call.get('error')]
+    if run.get('error'):
+        errors.append(run['error'])
+
+    return {
+        'task_title': f'运行复盘：{run_id}',
+        'task_input': f"{run['command_type']} {json.dumps(run['input_params'], ensure_ascii=False)}",
+        'task_output': f"运行状态：{run['status']}；指标：{', '.join(metrics) if metrics else '未记录指标'}",
+        'changed_files': artifacts,
+        'successes': _success_items(run, bundle.llm_calls, metrics),
+        'failures': errors,
+        'process_notes': [
+            f'run_id：{run_id}',
+            f"命令类型：{run['command_type']}",
+            f"LLM 节点：{', '.join(llm_nodes) if llm_nodes else '未调用 LLM'}",
+            f"观测产物数：{len(bundle.artifacts)}",
+        ],
+        'llm_calls': [
+            f"{call['node']} 使用 {call['model']}，耗时 {call['duration_ms']}ms"
+            for call in bundle.llm_calls
+        ],
+        'evidence': _evidence_items(bundle.llm_calls, metrics, artifacts),
+    }
+
+
+def _success_items(run: dict[str, Any], llm_calls: list[dict[str, Any]], metrics: list[str]) -> list[str]:
+    items = [
+        f"运行以 {run['status']} 状态结束。",
+        f"记录了 {len(llm_calls)} 次 LLM 调用。",
+        f"记录了 {len(metrics)} 项运行指标。",
+    ]
+    if any(call.get('thinking') for call in llm_calls):
+        items.append('记录了 provider 显式返回的 thinking 内容。')
+    return items
+
+
+def _evidence_items(llm_calls: list[dict[str, Any]], metrics: list[str], artifacts: list[str]) -> list[str]:
+    items = []
+    for call in llm_calls[:3]:
+        if call.get('thinking'):
+            items.append(f"{call['node']} thinking：{call['thinking']}")
+        if call.get('raw_output'):
+            items.append(f"{call['node']} output：{call['raw_output'][:300]}")
+    items.extend(f'运行指标：{metric}' for metric in metrics[:5])
+    items.extend(f'运行产物：{artifact}' for artifact in artifacts[:5])
+    return items
 
 
 def _build_trace(source: Source, data: dict[str, Any]) -> tuple[list[Evidence], list[Claim]]:
@@ -85,7 +135,7 @@ def _build_trace(source: Source, data: dict[str, Any]) -> tuple[list[Evidence], 
 
 
 def _build_cards(task_title: str, claims: list[Claim]) -> list[KnowledgeCard]:
-    review_claims = _claims_for(claims, ['task_input', 'task_output', 'successes', 'failures', 'process_notes'])
+    review_claims = _claims_for(claims, ['task_input', 'task_output', 'successes', 'failures', 'process_notes', 'llm_calls'])
     sop_claims = _claims_for(claims, ['successes', 'process_notes'])
     pattern_claims = _claims_for(claims, ['failures', 'changed_files', 'evidence'])
     specs = [
@@ -142,6 +192,7 @@ def _review_sections(data: dict[str, Any]) -> list[tuple[str, Any]]:
         ('successes', data.get('successes')),
         ('failures', data.get('failures')),
         ('process_notes', data.get('process_notes')),
+        ('llm_calls', data.get('llm_calls')),
         ('evidence', data.get('evidence')),
     ]
 
@@ -184,5 +235,6 @@ _SECTION_PREFIXES = {
     'successes': '成功经验：',
     'failures': '失败原因：',
     'process_notes': '修改过程：',
+    'llm_calls': 'LLM调用：',
     'evidence': '验证证据：',
 }

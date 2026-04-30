@@ -17,8 +17,9 @@ console = Console()
 HELP = """
 [bold]Commands[/bold]\n
 \t/ingest <path>    导入文件或目录\n
-\t/review <json>    写入任务复盘\n
+\t/review <run_id>  写入任务复盘\n
 \t/ask <question>   提问\n
+\t/runs             查看最近运行\n
 \t/stats            查看统计\n
 \t/help             查看帮助\n
 \t/quit             退出\n
@@ -49,6 +50,9 @@ class TUI:
             if text == '/stats':
                 self._stats()
                 continue
+            if text == '/runs':
+                self._runs()
+                continue
             if text.startswith('/ingest '):
                 self._ingest(text.removeprefix('/ingest ').strip())
                 continue
@@ -75,7 +79,15 @@ class TUI:
         if not Path(path).exists():
             console.print(Panel.fit(f'Path not found: {path}', border_style='red'))
             return
-        results = self.app.ingest(path)
+        state = _event_state()
+
+        def on_event(event) -> None:
+            _update_event_state(state, event)
+            live.update(_event_panel(state, title=f'Ingest: {path}'))
+
+        with Live(_event_panel(state, title=f'Ingest: {path}'), console=console, refresh_per_second=10) as live:
+            results = self.app.ingest(path, on_event=on_event)
+            live.update(_event_panel(state, title=f'Ingest: {path}'))
         table = Table(title=f'Ingested: {path}')
         table.add_column('Source')
         table.add_column('Type')
@@ -102,11 +114,8 @@ class TUI:
             )
         console.print(table)
 
-    def _review(self, path: str) -> None:
-        if not Path(path).exists():
-            console.print(Panel.fit(f'Path not found: {path}', border_style='red'))
-            return
-        result = self.app.review_task(path)
+    def _review(self, run_id: str) -> None:
+        result = self.app.review_task(run_id)
         table = Table(title=f'Task Review: {result.source.title}')
         table.add_column('Cards', justify='right')
         table.add_column('Claims', justify='right')
@@ -120,24 +129,67 @@ class TUI:
         )
         console.print(table)
 
+    def _runs(self) -> None:
+        runs = self.app.list_runs()
+        table = Table(title='Recent Runs')
+        table.add_column('Run ID')
+        table.add_column('Command')
+        table.add_column('Status')
+        table.add_column('Started At')
+        table.add_column('Ended At')
+        for run in runs:
+            table.add_row(
+                run['run_id'],
+                run['command_type'],
+                run['status'],
+                run['started_at'],
+                run.get('ended_at') or '',
+            )
+        console.print(table)
+
     def _ask(self, question: str) -> None:
-        buffer: list[str] = []
-        placeholder = '[dim]Thinking...[/dim]'
+        state = _event_state()
 
-        def on_delta(delta: str) -> None:
-            buffer.append(delta)
-            live.update(Panel(''.join(buffer) or placeholder, title=f'Q: {question}', border_style='cyan'))
+        def on_event(event) -> None:
+            _update_event_state(state, event)
+            live.update(_event_panel(state, title=f'Q: {question}'))
 
-        with Live(Panel(placeholder, title=f'Q: {question}', border_style='cyan'), console=console, refresh_per_second=10) as live:
-            answer = self.app.ask(question, on_delta=on_delta if self.app.backend_name == 'paimon' else None)
-            if self.app.backend_name != 'paimon':
-                live.update(Panel(answer, title=f'Q: {question}', border_style='blue'))
+        with Live(_event_panel(state, title=f'Q: {question}'), console=console, refresh_per_second=10) as live:
+            answer = self.app.ask(question, on_event=on_event)
+            live.update(_event_panel(state, title=f'Q: {question}'))
         console.print(Panel(answer, title=f'Q: {question}', border_style='blue'))
 
 
 def main() -> None:
     setup_logging()
     TUI().run()
+
+
+def _event_state() -> dict:
+    return {'run_id': '', 'node': '', 'thinking': '', 'output': ''}
+
+
+def _update_event_state(state: dict, event) -> None:
+    state['run_id'] = event.run_id
+    state['node'] = event.node
+    if event.kind == 'thinking_delta':
+        state['thinking'] = (state['thinking'] + event.text)[-1000:]
+    elif event.kind == 'output_delta':
+        state['output'] = (state['output'] + event.text)[-1000:]
+
+
+def _event_panel(state: dict, *, title: str) -> Panel:
+    lines = [
+        f"[bold]Run[/bold] {state['run_id'] or '-'}",
+        f"[bold]Node[/bold] {state['node'] or '-'}",
+        '',
+        '[bold yellow]Thinking[/bold yellow]',
+        state['thinking'] or '[dim]-[/dim]',
+        '',
+        '[bold cyan]Output[/bold cyan]',
+        state['output'] or '[dim]-[/dim]',
+    ]
+    return Panel('\n'.join(lines), title=title, border_style='cyan')
 
 
 if __name__ == '__main__':

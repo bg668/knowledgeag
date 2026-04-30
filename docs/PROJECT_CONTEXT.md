@@ -11,6 +11,7 @@
 ## 项目环境依赖
 
 使用uv管理python环境依赖
+仅在测试流程是否可跑题时使用mock
 
 
 ## 项目核心功能
@@ -36,6 +37,8 @@ Source -> Evidence -> Claim -> KnowledgeCard -> Retrieval -> Validation -> Answe
 10. 提供导入质量评估脚本，输出 card/claim/evidence 计数、绑定完整率、覆盖率、重复 source 数和引用精确率。
 11. 代码类 Source 支持代码开发知识卡片类型，用于表达项目地图、模块职责、入口、修改影响面和设计取舍。
 12. 金融知识支持金融知识卡片类型，用于区分事实数据、事件脉络、投资逻辑、操作规则和复盘验证。
+13. `/ingest`、`/ask` 生成 `run_id` 并写入独立观测 SQLite，用于记录运行、LLM 调用、产物和质量指标。
+14. `/review <run_id>` 可从观测日志自动生成复盘卡，不再要求用户手写 JSON。
 
 项目边界：
 knowledgeag-card 负责知识接入、组织、存储、检索、回源、问答上下文构造。
@@ -55,7 +58,7 @@ LLM 负责理解
 
 ### 主流程概述
 
-项目主流程采用“入口门面 + 容器装配 + 服务编排 + 适配器 + 仓储”的组合方式串联。`AgentApp` 作为 Facade，对 TUI 和脚本隐藏内部复杂度，只暴露 `ingest`、`ask`、`stats`；`AppContainer` 负责依赖装配，相当于轻量 Factory / DI Container，把配置、Repository、Service、LLM Adapter 组装起来；`IngestService`、`ValidationService`、`AgentLoop` 作为流程编排层，只表达主链路，不承载底层实现；`LLMAdapter`、Parser 属于 Adapter，用来隔离 paimonsdk、mock、文本解析等外部差异；各类 Repository 负责持久化边界。整体流程是：入口接收命令，门面转交服务，服务按领域链路推进，外部能力通过 Adapter 调用，领域对象通过 Repository 入库或读取，最后由 PromptBuilder 和 AnswerService 生成回答。
+项目主流程采用“入口门面 + 容器装配 + 服务编排 + 适配器 + 仓储”的组合方式串联。`AgentApp` 作为 Facade，对 TUI 和脚本隐藏内部复杂度，暴露 `ingest`、`ask`、`review_task`、`list_runs`、`stats`；`AppContainer` 负责依赖装配，相当于轻量 Factory / DI Container，把配置、Repository、Service、KnowledgeAgent 和观测日志组装起来；`IngestService`、`ValidationService`、`AgentLoop` 作为流程编排层，只表达主链路，不承载底层实现；`KnowledgeAgent`、Parser 属于 Adapter，用来隔离 paimonsdk、mock、文本解析等外部差异；各类 Repository 和独立 ObservabilityRecorder 负责持久化边界。整体流程是：入口接收命令，门面生成 run_id 并转交服务，服务按领域链路推进，外部能力通过 Adapter 调用，领域对象通过 Repository 入库或读取，最后由 PromptBuilder 和 AnswerService 生成回答。
 
 ### 资料接入流程
 
@@ -110,7 +113,7 @@ AgentApp.ask
 -> EvidenceFetcher.fetch
 -> AnswerService.answer
 -> PromptBuilder.build
--> LLMAdapter.answer
+-> KnowledgeAgent.answer
 -> ResponseFormatter.format
 -> answer text
 
@@ -128,6 +131,27 @@ AgentApp.ask
 回源链路：
 KnowledgeCard.claim_ids -> Claim.evidence_ids -> Evidence -> Source
 
+### 运行复盘流程
+
+入口：
+TUI /runs
+TUI /review <run_id>
+AgentApp.list_runs(limit)
+AgentApp.review_task(run_id)
+
+主流程：
+AgentApp.review_task
+-> TaskReviewService.review_task
+-> ObservabilityRecorder.get_run_bundle
+-> Source / Evidence / Claim / KnowledgeCard repositories save
+-> IngestResult
+
+输入：
+观测日志中的 run_id
+
+输出：
+Source URI 指向 `observability://runs/<run_id>` 的复盘类 KnowledgeCard。
+
 ---
 
 ## 主要模块关系
@@ -144,6 +168,7 @@ retrieval/   卡片检索、排序、回源触发判断。
 validation/  组合检索结果、触发规则、Claim、Evidence、Source。
 runtime/     TUI、AgentApp、问答循环、Prompt 构造、输出格式化。
 storage/     SQLite schema、连接管理、Repository。
+observability/ 独立运行观测库，记录 runs、llm_calls、run_artifacts、run_metrics。
 adapters/    LLM 适配和文本解析适配。
 scripts/     最小演示入口。
 
@@ -179,6 +204,9 @@ src/knowledgeag_card/app/config.py
 src/knowledgeag_card/app/container.py
 .env.example
 config.json.example
+src/knowledgeag_card/observability/recorder.py
+src/knowledgeag_card/observability/context.py
+src/knowledgeag_card/observability/events.py
 
 ### 资料接入
 
@@ -337,6 +365,19 @@ sources
 evidences
 claims
 cards
+
+当前观测存储：
+data/logs/knowledgeag_observability.sqlite3
+runs
+llm_calls
+run_artifacts
+run_metrics
+
+观测日志原则：
+1. 观测库独立于知识库 SQLite。
+2. `run_id` 是 `/ingest`、`/ask`、`/review` 串联复盘的标识。
+3. LLM 输出、显式 thinking、prompt 元信息和错误信息长期保留。
+4. 超大原文只保存路径、hash、长度和预览，不把整篇原文复制进观测库。
 
 当前检索：
 SimpleCardIndex

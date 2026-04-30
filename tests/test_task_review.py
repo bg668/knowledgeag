@@ -12,6 +12,7 @@ def write_config(tmp_path: Path) -> None:
         json.dumps(
             {
                 'storage': {'db_path': str(tmp_path / 'knowledgeag.sqlite3')},
+                'observability': {'db_path': str(tmp_path / 'observability.sqlite3')},
                 'models': {
                     'mode': 'mock',
                     'providers': {
@@ -80,34 +81,63 @@ def write_review(tmp_path: Path) -> Path:
     return path
 
 
-def test_review_task_generates_traceable_cards(tmp_path, monkeypatch):
+def record_reviewable_run(app: AgentApp) -> str:
+    run_id = app.container.observability.start_run(
+        command_type='ask',
+        input_params={'question': '同一文档重复导入后缓存为什么失效？'},
+    )
+    app.container.observability.record_llm_call(
+        run_id=run_id,
+        node='answer',
+        model='mock',
+        system_prompt='answer prompt',
+        input_payload={'question': '同一文档重复导入后缓存为什么失效？'},
+        raw_output='重复导入需要复用已有 source/version，避免重复 source。',
+        thinking='需要检查 SourceRepository 的 uri/version 幂等逻辑。',
+        duration_ms=8,
+    )
+    app.container.observability.record_artifact(
+        run_id=run_id,
+        artifact_type='changed_file',
+        uri='src/knowledgeag_card/storage/source_repository.py',
+        metadata={'reason': '收口 source/version 幂等判断'},
+    )
+    app.container.observability.record_metric(run_id=run_id, name='card_count', value=3)
+    app.container.observability.record_metric(run_id=run_id, name='claim_count', value=9)
+    app.container.observability.record_metric(run_id=run_id, name='evidence_count', value=9)
+    app.container.observability.finish_run(run_id=run_id, status='succeeded')
+    return run_id
+
+
+def test_review_task_generates_traceable_cards_from_run_id(tmp_path, monkeypatch):
     monkeypatch.delenv('QWEN_API_KEY', raising=False)
     monkeypatch.delenv('KNOWLEDGEAG_RUNTIME', raising=False)
     write_config(tmp_path)
-    review_path = write_review(tmp_path)
     monkeypatch.chdir(tmp_path)
+    app = AgentApp.create()
+    run_id = record_reviewable_run(app)
 
-    result = AgentApp.create().review_task(review_path)
+    result = app.review_task(run_id)
 
-    assert result.source.title == '修复导入缓存失效'
-    assert result.source.uri == str(review_path.resolve())
+    assert result.source.title == f'运行复盘：{run_id}'
+    assert result.source.uri == f'observability://runs/{run_id}'
     assert {card.card_type for card in result.cards} == {'review_card', 'sop', 'pattern'}
     assert all(3 <= len(card.core_points) <= 7 for card in result.cards)
     assert all(card.claim_ids and card.evidence_ids for card in result.cards)
     assert all(evidence.source_id == result.source.source_id for evidence in result.evidences)
     assert all(evidence.source_version == result.source.version_id for evidence in result.evidences)
-    assert any('changed_files' in evidence.loc for evidence in result.evidences)
+    assert any('llm_calls' in evidence.loc for evidence in result.evidences)
 
 
-def test_review_task_cards_are_retrievable_before_later_tasks(tmp_path, monkeypatch):
+def test_review_task_cards_are_retrievable_before_later_tasks_from_run_id(tmp_path, monkeypatch):
     monkeypatch.delenv('QWEN_API_KEY', raising=False)
     monkeypatch.delenv('KNOWLEDGEAG_RUNTIME', raising=False)
     write_config(tmp_path)
-    review_path = write_review(tmp_path)
     monkeypatch.chdir(tmp_path)
     app = AgentApp.create()
+    run_id = record_reviewable_run(app)
 
-    result = app.review_task(review_path)
+    result = app.review_task(run_id)
     matches = app.container.card_index.search('重复导入 缓存 source_version 复盘', top_k=5)
 
     assert result.cards

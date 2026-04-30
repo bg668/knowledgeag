@@ -1,0 +1,126 @@
+{
+  "quality_metrics": {
+    "card_count": {
+      "min": 10
+    },
+    "claim_count": {
+      "min": 60
+    },
+    "evidence_count": {
+      "min": 60
+    },
+    "binding_completeness_rate": {
+      "min": 1.0
+    },
+    "coverage_rate": {
+      "min": 0.5
+    },
+    "duplicate_source_count": {
+      "eq": 0
+    },
+    "citation_precision_rate": {
+      "min": 1.0
+    }
+  },
+  "expected_source": {
+    "title": "test_doc.md",
+    "type": "markdown",
+    "source_summary_contains": [
+      "AI Coding 时代，模块化设计为什么比以前更重要？",
+      "模块化设计",
+      "Facade"
+    ]
+  },
+  "expected_cards": [
+    {
+      "title": "AI Coding 时代，模块化设计为什么比以前更重要？",
+      "core_points": [
+        "大家好，今天我们聊一个非常工程化、但又特别适合 AI Coding 的话题：",
+        "更具体一点，我们聊的是："
+      ]
+    },
+    {
+      "title": "一、AI Coding 中真正昂贵的东西变了",
+      "core_points": [
+        "过去我们写代码，最贵的是“人手写代码的时间”",
+        "但现在有了 AI Coding，代码生成变快了"
+      ]
+    },
+    {
+      "title": "三、AI Coding 中最有用的模块化设计模式",
+      "core_points": [
+        "Facade 外观模式",
+        "Adapter 适配器模式",
+        "Strategy 策略模式"
+      ]
+    },
+    {
+      "title": "四、Facade 外观模式：给复杂系统一个简单门面",
+      "core_points": [
+        "第一个模式是 Facade，外观模式",
+        "Facade 的核心思想是："
+      ]
+    },
+    {
+      "title": "七、Command 命令模式：把动作变成可审计对象",
+      "core_points": [
+        "第四个模式是 Command，命令模式",
+        "但在 Agent 和 AI Coding 中，它非常重要"
+      ]
+    }
+  ],
+  "expected_claims": [
+    {
+      "text": "大家好，今天我们聊一个非常工程化、但又特别适合 AI Coding 的话题：",
+      "evidence_quotes": [
+        "大家好，今天我们聊一个非常工程化、但又特别适合 AI Coding 的话题："
+      ]
+    },
+    {
+      "text": "过去我们写代码，最贵的是“人手写代码的时间”",
+      "evidence_quotes": [
+        "过去我们写代码，最贵的是“人手写代码的时间”"
+      ]
+    },
+    {
+      "text": "Facade 外观模式",
+      "evidence_quotes": [
+        "Facade 外观模式"
+      ]
+    },
+    {
+      "text": "Strategy 策略模式",
+      "evidence_quotes": [
+        "Strategy 策略模式"
+      ]
+    },
+    {
+      "text": "第四个模式是 Command，命令模式",
+      "evidence_quotes": [
+        "第四个模式是 Command，命令模式"
+      ]
+    }
+  ],
+  "expected_evidences": [
+    {
+      "quote": "大家好，今天我们聊一个非常工程化、但又特别适合 AI Coding 的话题：",
+      "section": "AI Coding 时代，模块化设计为什么比以前更重要？"
+    },
+    {
+      "quote": "过去我们写代码，最贵的是“人手写代码的时间”",
+      "section": "一、AI Coding 中真正昂贵的东西变了"
+    },
+    {
+      "quote": "Facade 外观模式",
+      "section": "三、AI Coding 中最有用的模块化设计模式"
+    },
+    {
+      "quote": "Strategy 策略模式",
+      "section": "三、AI Coding 中最有用的模块化设计模式"
+    },
+    {
+      "quote": "第四个模式是 Command，命令模式",
+      "section": "七、Command 命令模式：把动作变成可审计对象"
+    }
+  ]
+}

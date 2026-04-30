@@ -17,6 +17,7 @@ console = Console()
 HELP = """
 [bold]Commands[/bold]\n
 \t/ingest <path>    导入文件或目录\n
+\t/review <json>    写入任务复盘\n
 \t/ask <question>   提问\n
 \t/stats            查看统计\n
 \t/help             查看帮助\n
@@ -51,6 +52,9 @@ class TUI:
             if text.startswith('/ingest '):
                 self._ingest(text.removeprefix('/ingest ').strip())
                 continue
+            if text.startswith('/review '):
+                self._review(text.removeprefix('/review ').strip())
+                continue
             if text.startswith('/ask '):
                 self._ask(text.removeprefix('/ask ').strip())
                 continue
@@ -78,14 +82,42 @@ class TUI:
         table.add_column('Evidences', justify='right')
         table.add_column('Claims', justify='right')
         table.add_column('Cards', justify='right')
+        table.add_column('Source Coverage', justify='right')
+        table.add_column('Uncovered Sections', justify='right')
+        table.add_column('Missing Topics', justify='right')
         for result in results:
+            source_coverage = result.source_coverage
+            covered_sections = len(source_coverage.covered_sections) if source_coverage else 0
+            total_sections = len(source_coverage.source_sections) if source_coverage else 0
+            uncovered_sections = len(source_coverage.uncovered_sections) if source_coverage else 0
             table.add_row(
                 result.source.title,
                 result.source.type.value,
                 str(len(result.evidences)),
                 str(len(result.claims)),
                 str(len(result.cards)),
+                f'{covered_sections}/{total_sections}',
+                str(uncovered_sections),
+                str(len(result.missing_topics)),
             )
+        console.print(table)
+
+    def _review(self, path: str) -> None:
+        if not Path(path).exists():
+            console.print(Panel.fit(f'Path not found: {path}', border_style='red'))
+            return
+        result = self.app.review_task(path)
+        table = Table(title=f'Task Review: {result.source.title}')
+        table.add_column('Cards', justify='right')
+        table.add_column('Claims', justify='right')
+        table.add_column('Evidences', justify='right')
+        table.add_column('Card Types')
+        table.add_row(
+            str(len(result.cards)),
+            str(len(result.claims)),
+            str(len(result.evidences)),
+            ', '.join(card.card_type for card in result.cards),
+        )
         console.print(table)
 
     def _ask(self, question: str) -> None:

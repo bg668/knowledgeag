@@ -19,6 +19,8 @@ class IngestService:
         card_organizer,
         claim_validator,
         card_validator,
+        topic_coverage_checker,
+        source_coverage_checker,
         source_repository,
         evidence_repository,
         claim_repository,
@@ -36,6 +38,8 @@ class IngestService:
         self.card_organizer = card_organizer
         self.claim_validator = claim_validator
         self.card_validator = card_validator
+        self.topic_coverage_checker = topic_coverage_checker
+        self.source_coverage_checker = source_coverage_checker
         self.sources = source_repository
         self.evidences = evidence_repository
         self.claims = claim_repository
@@ -65,9 +69,31 @@ class IngestService:
             claims = self.claim_validator.validate(claims)
             cards = self.card_organizer.organize(source, claims, read_units=read_plan.units, evidences=evidences)
             cards = self.card_validator.validate(cards)
+            topic_coverage = self.topic_coverage_checker.check(
+                source=source,
+                read_units=read_plan.units,
+                cards=cards,
+                claims=claims,
+            )
+            source_coverage = self.source_coverage_checker.check(
+                source=source,
+                read_units=read_plan.units,
+                cards=cards,
+                claims=claims,
+                evidences=evidences,
+            )
 
             self.evidences.save_many(evidences)
             self.claims.save_many(claims)
             self.cards.save_many(cards)
-            results.append(IngestResult(source=source, evidences=evidences, claims=claims, cards=cards))
+            results.append(
+                IngestResult(
+                    source=source,
+                    evidences=evidences,
+                    claims=claims,
+                    cards=cards,
+                    topic_coverage=topic_coverage,
+                    source_coverage=source_coverage,
+                )
+            )
         return results

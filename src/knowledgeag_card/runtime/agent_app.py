@@ -20,6 +20,9 @@ class AgentApp:
     def ingest(self, path: str):
         return self.container.ingest_service.ingest_path(path)
 
+    def review_task(self, path: str):
+        return self.container.task_review_service.review_task(path)
+
     def ask(self, question: str, on_delta=None) -> str:
         return self.container.agent_loop.ask(question, on_delta=on_delta)
 

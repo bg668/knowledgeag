@@ -1,5 +1,232 @@
 # CHANGE_LOG.md
 
+### 2026-04-30 - 支持任务后复盘沉淀
+
+#### 修改目标
+
+完成 REQ-KM-014 第一版：支持通过任务复盘 JSON 手动触发写入，将原任务、输出、修改文件、成功经验、失败原因、过程记录和验证证据沉淀为可检索的复盘类 KnowledgeCard。
+
+#### 修改文件
+
+- `src/knowledgeag_card/memory/task_review_service.py`：新增任务复盘写入服务，生成 Source / Evidence / Claim / KnowledgeCard 并入库。
+- `src/knowledgeag_card/runtime/agent_app.py`、`src/knowledgeag_card/runtime/tui_app.py`：新增 `review_task` 门面和 `/review <json>` 手动触发命令。
+- `src/knowledgeag_card/app/container.py`：集中装配 `TaskReviewService`。
+- `src/knowledgeag_card/domain/card_types.py`：补充 `review_card`、`sop`、`pattern` 的别名和检索词。
+- `tests/test_task_review.py`：验证复盘卡生成、回源关联和后续检索复用。
+- `docs/REQUIREMENTS.md`、`docs/CHANGE_LOG.md`：同步需求状态和变更记录。
+
+#### 未修改范围
+
+未修改现有 ingest / ask 主流程，未新增 SQLite 表或字段，未修改 KnowledgeCard / Claim / Evidence 领域字段，未接入自动 Agent 完成钩子，未引入新的外部依赖。
+
+#### 验证方式
+
+- `uv run pytest tests/test_task_review.py -q`
+- `uv run pytest tests/test_end_to_end.py tests/test_financial_card_types.py tests/test_trigger_rules.py -q`
+- 按 `.agent/skills/code-review/SKILL.md` 对本次 diff 做后置审查。
+
+#### 剩余风险
+
+第一版只支持人工提供 JSON 文件，不自动从 Agent 执行上下文采集复盘内容；复盘卡内容质量依赖输入 JSON 的完整性；检索仍是简单词法索引，召回质量需要结合后续真实任务样例继续校验。
+
+### 2026-04-30 - 支持金融知识卡片类型
+
+#### 修改目标
+
+完成 REQ-KM-013 第一版：复用 `KnowledgeCard` 通用 schema，通过 `card_type` 支持金融知识类卡片，用于区分事实数据、事件脉络、投资逻辑、操作规则和复盘验证。
+
+#### 修改文件
+
+- `src/knowledgeag_card/domain/card_types.py`：新增金融 card_type 常量、别名和检索词。
+- `src/knowledgeag_card/agents/paimon_knowledge_agent.py`、`config.json.example`：同步金融卡片类型枚举与组织 prompt。
+- `tests/test_financial_card_types.py`、`tests/test_card_organizer.py`：验证金融类型归一化、检索词命中和 CardOrganizer 接收 LLM 明示类型。
+- `docs/PROJECT_CONTEXT.md`、`docs/REQUIREMENTS.md`、`docs/CHANGE_LOG.md`：同步项目地图、需求状态和变更记录。
+
+#### 未修改范围
+
+未新增 SQLite 表或字段；未拆分 `KnowledgeCard` 领域模型；未新增 `SourceType.FINANCE`；未修改入口文件、TUI 命令、导入/问答主流程、Repository、container 装配和存储结构；未做金融内容关键词自动推断。
+
+#### 验证方式
+
+- `.venv\Scripts\python.exe -m pytest tests\test_financial_card_types.py tests\test_card_organizer.py -q`
+- `.venv\Scripts\python.exe -m pytest -q`
+- 按 `.agent/skills/code-review/SKILL.md` 对本次 diff 做后置审查。
+
+#### 剩余风险
+
+真实 LLM 是否正确选择金融卡片类型仍需人工抽样核验；第一版只通过 prompt 和 card_type 归一化约束 FactCard 等类型，不引入复杂语义校验；检索仍是简单词法索引，金融类型别名只提升相关关键词命中能力。
+
+### 2026-04-30 - 支持代码开发知识卡片类型
+
+#### 修改目标
+
+完成 REQ-KM-012 第一版：复用 `KnowledgeCard` 通用 schema，通过 `card_type` 支持代码开发类卡片，用于表达项目地图、模块职责、入口、修改影响面和设计取舍。
+
+#### 修改文件
+
+- `src/knowledgeag_card/domain/card_types.py`：新增代码开发 card_type 常量、别名和归一化逻辑。
+- `src/knowledgeag_card/agents/`、`src/knowledgeag_card/ingestion/card_organizer.py`：向卡片组织节点传入 `source_type`，代码 Source 优先生成或归一为代码开发卡片类型。
+- `src/knowledgeag_card/storage/vector_index.py`：将 `card_type` 和代码类型别名纳入检索文本。
+- `config.json.example`、`tests/test_card_organizer.py`、`tests/test_code_card_types.py`、`tests/test_end_to_end.py`：同步 prompt 与验证用例。
+- `docs/PROJECT_CONTEXT.md`、`docs/REQUIREMENTS.md`、`docs/CHANGE_LOG.md`：同步项目地图、需求状态和变更记录。
+
+#### 未修改范围
+
+未新增 SQLite 表或字段；未拆分 `KnowledgeCard` 领域模型；未修改入口文件、TUI 命令、导入/问答主流程顺序、Repository 存取结构、paimonsdk 工具能力和配置装配方式。
+
+#### 验证方式
+
+- `.venv\Scripts\python.exe -m pytest tests\test_card_organizer.py tests\test_code_card_types.py tests\test_end_to_end.py::test_mock_ingest_generates_code_development_card_type_for_code_source -q`
+- `.venv\Scripts\python.exe -m pytest tests\test_card_organizer.py tests\test_code_card_types.py tests\test_end_to_end.py tests\test_source_summary.py -q`
+- `.venv\Scripts\python.exe -m pytest -q`
+- 按 `.agent/skills/code-review/SKILL.md` 对本次 diff 做后置审查。
+
+#### 剩余风险
+
+真实 LLM 对代码卡片类型的选择仍需人工抽样核验；当前检索仍是简单词法索引，代码类型别名只提升“入口/影响面/决策/模块”等关键词命中能力。
+
+### 2026-04-30 - 建立 test_doc.md 期望输出样例
+
+#### 修改目标
+
+完成 REQ-KM-011：为 `tests/test_data/test_doc.md` 建立人工整理的期望输出样例，并让评估脚本可用该样例做结构化差异检查。
+
+#### 修改文件
+
+- `tests/test_data/expected_test_doc.json`：新增 expected source/cards/claims/evidences 与质量阈值。
+- `src/knowledgeag_card/validation/quality_metrics.py`：新增结构化 expected 输出构造和子集差异比较。
+- `scripts/evaluate_ingest_quality.py`：将导入结果转换为结构化比较视图后执行 expected 对比。
+- `tests/test_quality_metrics.py`、`tests/test_evaluate_ingest_quality.py`：验证结构化 expected 比较、失败差异和 test_doc fixture 可用于脚本。
+- `docs/REQUIREMENTS.md`、`docs/CHANGE_LOG.md`：同步 REQ-KM-011 状态和变更记录。
+
+#### 未修改范围
+
+未修改入口启动逻辑、导入主流程顺序、领域模型、配置装配、SQLite schema、Repository、KnowledgeAgent / LLM 行为和 Card/Claim/Evidence 生成逻辑。
+
+#### 验证方式
+
+- `.venv\Scripts\python.exe -m pytest tests\test_quality_metrics.py tests\test_evaluate_ingest_quality.py -q`
+- `.venv\Scripts\python.exe -m pytest -q`
+- `$env:KNOWLEDGEAG_RUNTIME='mock'; .venv\Scripts\python.exe scripts\evaluate_ingest_quality.py tests\test_data\test_doc.md --expected tests\test_data\expected_test_doc.json`
+- 按 `.agent/skills/code-review/SKILL.md` 对本次 diff 做后置审查。
+
+#### 剩余风险
+
+期望样例采用稳定文本子集比较，不绑定随机 ID 和时间；真实 LLM 输出若语义正确但措辞不同，仍需要人工核验后调整 expected 样例。
+
+### 2026-04-30 - 完成质量评估指标
+
+#### 修改目标
+
+完成 REQ-KM-010：为一次导入结果生成质量评估指标，并支持命令行 JSON 报告与 expected 阈值/子集对比。
+
+#### 修改文件
+
+- `src/knowledgeag_card/validation/quality_metrics.py`：新增 card/claim/evidence 计数、绑定完整率、覆盖率、重复 source 数和引用精确率计算。
+- `scripts/evaluate_ingest_quality.py`：新增导入质量评估命令，支持 `--expected` 对比并用退出码表达结果。
+- `tests/test_quality_metrics.py`、`tests/test_evaluate_ingest_quality.py`：验证指标公式、expected 对比、JSON 输出和失败退出码。
+- `docs/PROJECT_CONTEXT.md`、`docs/REQUIREMENTS.md`、`docs/CHANGE_LOG.md`：同步项目地图、REQ-KM-010 状态和变更记录。
+
+#### 未修改范围
+
+未修改入口启动逻辑、TUI 主流程、问答流程、SQLite schema、Repository、KnowledgeAgent / LLM 接口、Card/Claim/Evidence 生成逻辑和配置装配。
+
+#### 验证方式
+
+- `.venv\Scripts\python.exe -m pytest tests\test_quality_metrics.py tests\test_evaluate_ingest_quality.py -q`
+- `.venv\Scripts\python.exe -m pytest -q`
+- `$env:KNOWLEDGEAG_RUNTIME='mock'; .venv\Scripts\python.exe scripts\evaluate_ingest_quality.py tests\test_data\test_doc.md`
+
+#### 剩余风险
+
+引用精确率是基于 quote、loc 和 content 的确定性近似指标，不能替代人工判断 claim 与 evidence 的语义支撑质量；第一版只评估本次导入结果，不扫描历史数据库全量质量。
+
+### 2026-04-30 - 完成 Source 覆盖率检查
+
+#### 修改目标
+
+完成 REQ-KM-009：导入后生成 Source 章节覆盖报告，记录已覆盖章节、未覆盖章节、card/claim 总数和每张 card 的 claim/evidence 数，并支持 JSON 输出。
+
+#### 修改文件
+
+- `src/knowledgeag_card/validation/source_coverage_checker.py`：新增 Source 章节覆盖率检查。
+- `src/knowledgeag_card/domain/models.py`：新增 SourceCoverageReport、CardCoverageSummary，并挂到 IngestResult。
+- `src/knowledgeag_card/ingestion/ingest_service.py`、`src/knowledgeag_card/app/container.py`：在导入流程 cards 校验后接入 Source 覆盖检查。
+- `scripts/ingest_demo.py`、`src/knowledgeag_card/runtime/tui_app.py`：支持 `--json` 输出和 TUI 章节覆盖概览展示。
+- `tests/test_source_coverage_checker.py`、`tests/test_ingest_demo.py`、`tests/test_end_to_end.py`：验证覆盖报告、JSON 数据和端到端返回字段。
+- `docs/PROJECT_CONTEXT.md`、`docs/REQUIREMENTS.md`、`docs/CHANGE_LOG.md`：同步项目地图、需求状态和变更记录。
+
+#### 未修改范围
+
+未修改 SQLite schema、Repository、KnowledgeAgent / LLM 接口、Evidence 对齐、Card 组织规则、问答流程和检索流程；Source coverage 仅随本次导入结果返回，不持久化历史报告。
+
+#### 验证方式
+
+- `.venv\Scripts\python.exe -m pytest tests\test_source_coverage_checker.py tests\test_ingest_demo.py tests\test_end_to_end.py -q`
+- `.venv\Scripts\python.exe -m pytest -q`
+- 手动运行 `scripts\ingest_demo.py <path> --json` 核对 JSON 中 `source_coverage.covered_sections`、`source_coverage.uncovered_sections` 和 `source_coverage.cards`。
+
+#### 剩余风险
+
+章节覆盖依赖 ReadUnit 标题、card applicable_contexts 和 evidence loc 中的 section 信息；代码文件或缺少结构信息的文档只能得到较粗的全文覆盖判断。
+
+### 2026-04-30 - 完成 KnowledgeCard 粒度控制
+
+#### 修改目标
+
+完成 REQ-KM-008：过滤结构化长文中过粗的跨章节全文总览卡，并让既有结构补卡逻辑生成围绕单一章节/主题的 KnowledgeCard。
+
+#### 修改文件
+
+- `src/knowledgeag_card/ingestion/card_organizer.py`：过滤绑定 claims 横跨多个 section 的过粗卡，避免单卡退化为全文总览。
+- `src/knowledgeag_card/agents/paimon_knowledge_agent.py`、`config.json.example`：收紧 card 组织 prompt，要求不要合并多个 structure 标题下的 claims。
+- `tests/test_card_organizer.py`、`tests/test_end_to_end.py`：验证过粗总览卡被过滤、章节主题卡被补足，最终卡不横跨多个章节。
+- `docs/REQUIREMENTS.md`、`docs/CHANGE_LOG.md`：同步 REQ-KM-008 状态和变更记录。
+
+#### 未修改范围
+
+未修改入口文件、SQLite schema、Repository、领域模型、配置装配方式、问答/检索流程；未处理 REQ-KM-009/010。
+
+#### 验证方式
+
+- `.venv\Scripts\python.exe -m pytest tests\test_card_organizer.py tests\test_end_to_end.py -q`
+- `.venv\Scripts\python.exe -m pytest -q`
+- 按 `.agent/skills/code-review/SKILL.md` 对本次 diff 做后置审查。
+
+#### 剩余风险
+
+无结构信息或 evidence loc 缺少 section 的输入仍只能依赖 3-7 个 core_points 与绑定关系过滤；真实 LLM 主题质量仍需人工抽样核验。
+
+### 2026-04-30 - 完成关键主题覆盖校验
+
+#### 修改目标
+
+完成 REQ-KM-007：导入后提取 Source 标题、结构标题、摘要主题和显式关键术语，校验是否被 KnowledgeCard / Claim 覆盖，并输出 missing_topics。
+
+#### 修改文件
+
+- `src/knowledgeag_card/validation/topic_coverage_checker.py`：新增确定性主题提取和覆盖校验。
+- `src/knowledgeag_card/domain/models.py`：新增 TopicCoverageReport，并让 IngestResult 暴露 missing_topics。
+- `src/knowledgeag_card/ingestion/ingest_service.py`、`src/knowledgeag_card/app/container.py`：在导入流程 cards 校验后接入覆盖校验。
+- `src/knowledgeag_card/runtime/tui_app.py`、`scripts/ingest_demo.py`：导入结果展示 missing topics。
+- `tests/test_topic_coverage_checker.py`、`tests/test_end_to_end.py`：验证覆盖、缺失、去重和端到端返回字段。
+- `docs/PROJECT_CONTEXT.md`、`docs/REQUIREMENTS.md`、`docs/CHANGE_LOG.md`：同步项目地图、需求状态和变更记录。
+
+#### 未修改范围
+
+未修改 SQLite schema、Repository、KnowledgeAgent / paimonsdk 接口、问答流程、检索排序、Evidence 对齐和 Card 组织规则；未实现 REQ-KM-008 粒度控制或 REQ-KM-009 Source 覆盖率报告。
+
+#### 验证方式
+
+- `.venv\Scripts\python.exe -m pytest tests\test_topic_coverage_checker.py -q`
+- `.venv\Scripts\python.exe -m pytest tests\test_end_to_end.py -q`
+- `.venv\Scripts\python.exe -m pytest -q`
+- 按 `.agent/skills/code-review/SKILL.md` 对本次 diff 做后置审查。
+
+#### 剩余风险
+
+中文关键术语提取偏保守；missing_topics 第一版仅随本次导入结果返回和展示，不回写历史数据、不持久化质量报告。
+
 ### 2026-04-30 - 完成基于结构的多 KnowledgeCard 组织
 
 #### 修改目标

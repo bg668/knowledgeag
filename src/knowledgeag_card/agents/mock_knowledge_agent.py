@@ -4,6 +4,7 @@ import re
 from typing import Callable
 
 from knowledgeag_card.agents.base import KnowledgeAgent
+from knowledgeag_card.domain.card_types import normalize_card_type
 from knowledgeag_card.domain.models import ClaimDraft, EvidenceAnchor, ReadUnit
 
 
@@ -57,6 +58,7 @@ class MockKnowledgeAgent(KnowledgeAgent):
         self,
         *,
         source_title: str,
+        source_type: str,
         claims: list[str],
         structure: list[str] | None = None,
         claim_sections: dict[str, str] | None = None,
@@ -67,16 +69,18 @@ class MockKnowledgeAgent(KnowledgeAgent):
         cards = []
         for index, (section, core_points) in enumerate(groups, start=1):
             title = section or _card_title(source_title, core_points[0], index)
+            hint_text = ' '.join([title, *core_points])
+            card_type = normalize_card_type('knowledge', source_type=source_type, hint_text=hint_text)
             cards.append(
                 {
                     'title': title,
-                    'card_type': 'knowledge',
+                    'card_type': card_type,
                     'summary': core_points[0],
                     'applicable_contexts': [section or 'general'],
                     'core_points': core_points,
                     'practice_rules': core_points[:3],
                     'anti_patterns': [],
-                    'tags': ['knowledge'],
+                    'tags': [card_type],
                 }
             )
         return cards

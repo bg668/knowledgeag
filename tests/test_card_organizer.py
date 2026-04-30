@@ -100,7 +100,7 @@ def test_card_organizer_rejects_ambiguous_claim_text_matches():
     assert cards == []
 
 
-def test_card_organizer_passes_structure_context_and_adds_missing_section_cards():
+def test_card_organizer_filters_whole_source_overview_and_adds_section_cards():
     claims = [_claim(i) for i in range(6)]
     evidences = [_evidence(i, 'Facade 边界' if i < 3 else 'Adapter 边界') for i in range(6)]
     agent = StaticCardAgent([_raw_card('全文总览', claims)])
@@ -117,9 +117,72 @@ def test_card_organizer_passes_structure_context_and_adds_missing_section_cards(
         claims[4].text: 'Adapter 边界',
         claims[5].text: 'Adapter 边界',
     }
-    assert [card.title for card in cards] == ['全文总览', 'Facade 边界', 'Adapter 边界']
-    assert cards[1].claim_ids == [claims[0].claim_id, claims[1].claim_id, claims[2].claim_id]
-    assert cards[2].claim_ids == [claims[3].claim_id, claims[4].claim_id, claims[5].claim_id]
+    assert [card.title for card in cards] == ['Facade 边界', 'Adapter 边界']
+    assert cards[0].claim_ids == [claims[0].claim_id, claims[1].claim_id, claims[2].claim_id]
+    assert cards[1].claim_ids == [claims[3].claim_id, claims[4].claim_id, claims[5].claim_id]
+
+
+def test_card_organizer_normalizes_code_development_card_types():
+    claims = [_claim(i) for i in range(15)]
+    agent = StaticCardAgent(
+        [
+            _raw_card('项目地图', claims[0:3], card_type='ProjectContext'),
+            _raw_card('模块边界', claims[3:6], card_type='ModuleCard'),
+            _raw_card('启动入口', claims[6:9], card_type='EntryPointCard'),
+            _raw_card('变更影响', claims[9:12], card_type='ChangeImpactCard'),
+            _raw_card('设计取舍', claims[12:15], card_type='DecisionRecord'),
+        ]
+    )
+    organizer = CardOrganizer(agent)
+
+    cards = organizer.organize(_source(source_type=SourceType.CODE), claims)
+
+    assert agent.source_type == 'code'
+    assert [card.card_type for card in cards] == [
+        'project_context',
+        'module_card',
+        'entry_point_card',
+        'change_impact_card',
+        'decision_record',
+    ]
+    assert {tag for card in cards for tag in card.tags} >= {
+        'project_context',
+        'module_card',
+        'entry_point_card',
+        'change_impact_card',
+        'decision_record',
+    }
+
+
+def test_card_organizer_normalizes_financial_card_types_from_llm_output():
+    claims = [_claim(i) for i in range(15)]
+    agent = StaticCardAgent(
+        [
+            _raw_card('事实数据', claims[0:3], card_type='FactCard'),
+            _raw_card('事件脉络', claims[3:6], card_type='EventCard'),
+            _raw_card('投资逻辑', claims[6:9], card_type='ThesisCard'),
+            _raw_card('操作规则', claims[9:12], card_type='StrategyCard'),
+            _raw_card('复盘验证', claims[12:15], card_type='ReviewCard'),
+        ]
+    )
+    organizer = CardOrganizer(agent)
+
+    cards = organizer.organize(_source(), claims)
+
+    assert [card.card_type for card in cards] == [
+        'fact_card',
+        'event_card',
+        'thesis_card',
+        'strategy_card',
+        'review_card',
+    ]
+    assert {tag for card in cards for tag in card.tags} >= {
+        'fact_card',
+        'event_card',
+        'thesis_card',
+        'strategy_card',
+        'review_card',
+    }
 
 
 class StaticCardAgent:
@@ -132,19 +195,21 @@ class StaticCardAgent:
         self,
         *,
         source_title: str,
+        source_type: str,
         claims: list[str],
         structure: list[str] | None = None,
         claim_sections: dict[str, str] | None = None,
     ) -> list[dict]:
+        self.source_type = source_type
         self.structure = structure
         self.claim_sections = claim_sections
         return self.cards
 
 
-def _source() -> Source:
+def _source(source_type: SourceType = SourceType.MARKDOWN) -> Source:
     return Source(
         source_id='src_1',
-        type=SourceType.MARKDOWN,
+        type=source_type,
         title='module.md',
         uri='module.md',
         version_id='v1',
@@ -162,10 +227,10 @@ def _claim(index: int) -> Claim:
     )
 
 
-def _raw_card(title: str, claims: list[Claim]) -> dict:
+def _raw_card(title: str, claims: list[Claim], *, card_type: str = 'knowledge') -> dict:
     return {
         'title': title,
-        'card_type': 'knowledge',
+        'card_type': card_type,
         'summary': claims[0].text,
         'applicable_contexts': ['审核知识卡'],
         'core_points': [claim.text for claim in claims],

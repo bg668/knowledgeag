@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 
 from knowledgeag_card.agents.base import KnowledgeAgent
+from knowledgeag_card.domain.card_types import normalize_card_type
 from knowledgeag_card.domain.models import Claim, Evidence, KnowledgeCard, ReadUnit, Source, new_id, utcnow
 
 
@@ -25,6 +26,7 @@ class CardOrganizer:
         claim_sections = _claim_sections(claims, evidence_by_id)
         raw_cards = self.knowledge_agent.organize_cards(
             source_title=source.title,
+            source_type=source.type.value,
             claims=[claim.text for claim in claims],
             structure=structure,
             claim_sections=claim_sections,
@@ -58,6 +60,8 @@ class CardOrganizer:
                 seen_claim_ids.add(claim.claim_id)
             if not all_points_bound:
                 continue
+            if _spans_multiple_sections(matched_claims, claim_sections):
+                continue
             claim_ids = [claim.claim_id for claim in matched_claims]
             claim_set = frozenset(claim_ids)
             if claim_set in seen_claim_sets:
@@ -78,12 +82,18 @@ class CardOrganizer:
             card_section = _single_section(matched_claims, claim_sections)
             if card_section is not None:
                 covered_sections.add(card_section)
+            title = (raw.get('title') or source.title).strip()
+            card_type = normalize_card_type(
+                raw.get('card_type'),
+                source_type=source.type.value,
+                hint_text=' '.join([title, raw.get('summary') or '', *core_points]),
+            )
             seen_claim_sets.add(claim_set)
             cards.append(
                 KnowledgeCard(
                     card_id=new_id('card'),
-                    title=(raw.get('title') or source.title).strip(),
-                    card_type=(raw.get('card_type') or 'knowledge').strip(),
+                    title=title,
+                    card_type=card_type,
                     summary=(raw.get('summary') or core_points[0]).strip(),
                     applicable_contexts=contexts,
                     core_points=core_points,
@@ -91,7 +101,7 @@ class CardOrganizer:
                     anti_patterns=[x.strip() for x in raw.get('anti_patterns', []) if x and x.strip()],
                     claim_ids=claim_ids,
                     evidence_ids=evidence_ids,
-                    tags=[x.strip() for x in raw.get('tags', []) if x and x.strip()],
+                    tags=_normalized_tags(raw.get('tags', []), card_type),
                     updated_at=utcnow(),
                 )
             )
@@ -102,6 +112,7 @@ class CardOrganizer:
                 claim_sections=claim_sections,
                 covered_sections=covered_sections,
                 seen_claim_sets=seen_claim_sets,
+                source_type=source.type.value,
             )
         )
         return cards
@@ -151,6 +162,7 @@ def _section_cards(
     claim_sections: dict[str, str],
     covered_sections: set[str],
     seen_claim_sets: set[frozenset[str]],
+    source_type: str,
 ) -> list[KnowledgeCard]:
     if len(structure) < 2:
         return []
@@ -183,11 +195,12 @@ def _section_cards(
             seen_claim_sets.add(claim_set)
             title = section if index == 1 else f'{section} ({index})'
             core_points = [claim.text for claim in chunk]
+            card_type = normalize_card_type('knowledge', source_type=source_type, hint_text=' '.join([title, *core_points]))
             cards.append(
                 KnowledgeCard(
                     card_id=new_id('card'),
                     title=title,
-                    card_type='knowledge',
+                    card_type=card_type,
                     summary=core_points[0],
                     applicable_contexts=[section],
                     core_points=core_points,
@@ -195,7 +208,7 @@ def _section_cards(
                     anti_patterns=[],
                     claim_ids=claim_ids,
                     evidence_ids=evidence_ids,
-                    tags=['knowledge', section],
+                    tags=_normalized_tags([section], card_type),
                     updated_at=utcnow(),
                 )
             )
@@ -223,3 +236,16 @@ def _single_section(claims: list[Claim], claim_sections: dict[str, str]) -> str 
     if len(sections) != 1:
         return None
     return next(iter(sections))
+
+
+def _spans_multiple_sections(claims: list[Claim], claim_sections: dict[str, str]) -> bool:
+    sections = {claim_sections.get(claim.text) for claim in claims}
+    sections.discard(None)
+    return len(sections) > 1
+
+
+def _normalized_tags(raw_tags: list[str], card_type: str) -> list[str]:
+    tags = [tag.strip() for tag in raw_tags if tag and tag.strip()]
+    if card_type not in tags:
+        tags.insert(0, card_type)
+    return tags

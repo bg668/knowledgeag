@@ -4,6 +4,7 @@ import math
 import re
 from collections import Counter
 
+from knowledgeag_card.domain.card_types import card_type_search_terms
 from knowledgeag_card.domain.models import KnowledgeCard
 from knowledgeag_card.storage.card_repository import CardRepository
 
@@ -26,6 +27,8 @@ class SimpleCardIndex:
         for card in self.cards.list_all():
             doc = ' '.join([
                 card.title,
+                card.card_type,
+                ' '.join(card_type_search_terms(card.card_type)),
                 card.summary,
                 ' '.join(card.core_points),
                 ' '.join(card.tags),

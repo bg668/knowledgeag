@@ -120,11 +120,45 @@ class ValidationResult:
 
 
 @dataclass(slots=True)
+class TopicCoverageReport:
+    source_topics: list[str]
+    covered_topics: list[str]
+    missing_topics: list[str]
+
+
+@dataclass(slots=True)
+class CardCoverageSummary:
+    card_id: str
+    title: str
+    claim_count: int
+    evidence_count: int
+    covered_sections: list[str]
+
+
+@dataclass(slots=True)
+class SourceCoverageReport:
+    source_sections: list[str]
+    covered_sections: list[str]
+    uncovered_sections: list[str]
+    card_count: int
+    claim_count: int
+    cards: list[CardCoverageSummary]
+
+
+@dataclass(slots=True)
 class IngestResult:
     source: Source
     evidences: list[Evidence]
     claims: list[Claim]
     cards: list[KnowledgeCard]
+    topic_coverage: TopicCoverageReport | None = None
+    source_coverage: SourceCoverageReport | None = None
+
+    @property
+    def missing_topics(self) -> list[str]:
+        if self.topic_coverage is None:
+            return []
+        return self.topic_coverage.missing_topics
 
 
 @dataclass(slots=True)

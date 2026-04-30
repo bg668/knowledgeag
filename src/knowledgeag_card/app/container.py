@@ -13,6 +13,7 @@ from knowledgeag_card.ingestion.read_planner import ReadPlanner
 from knowledgeag_card.ingestion.source_summarizer import SourceSummarizer
 from knowledgeag_card.ingestion.source_loader import SourceLoader
 from knowledgeag_card.ingestion.structural_splitter import StructuralSplitter
+from knowledgeag_card.memory.task_review_service import TaskReviewService
 from knowledgeag_card.retrieval.card_ranker import CardRanker
 from knowledgeag_card.retrieval.card_retriever import CardRetriever
 from knowledgeag_card.retrieval.claim_retriever import ClaimRetriever
@@ -32,6 +33,8 @@ from knowledgeag_card.tools.registry import ToolRegistry
 from knowledgeag_card.validation.answer_validator import AnswerValidator
 from knowledgeag_card.validation.card_validator import CardValidator
 from knowledgeag_card.validation.claim_validator import ClaimValidator
+from knowledgeag_card.validation.source_coverage_checker import SourceCoverageChecker
+from knowledgeag_card.validation.topic_coverage_checker import TopicCoverageChecker
 from knowledgeag_card.validation.validation_service import ValidationService
 
 
@@ -58,6 +61,8 @@ class AppContainer:
         self.claim_validator = ClaimValidator()
         self.card_organizer = CardOrganizer(self.knowledge_agent)
         self.card_validator = CardValidator()
+        self.topic_coverage_checker = TopicCoverageChecker()
+        self.source_coverage_checker = SourceCoverageChecker()
         self.ingest_service = IngestService(
             source_loader=self.source_loader,
             read_planner=self.read_planner,
@@ -69,6 +74,8 @@ class AppContainer:
             card_organizer=self.card_organizer,
             claim_validator=self.claim_validator,
             card_validator=self.card_validator,
+            topic_coverage_checker=self.topic_coverage_checker,
+            source_coverage_checker=self.source_coverage_checker,
             source_repository=self.sources,
             evidence_repository=self.evidences,
             claim_repository=self.claims,
@@ -91,6 +98,12 @@ class AppContainer:
         self.answer_validator = AnswerValidator()
         self.answer_service = AnswerService(self.knowledge_agent, PromptBuilder(), ResponseFormatter())
         self.agent_loop = AgentLoop(self.validation_service, self.answer_service)
+        self.task_review_service = TaskReviewService(
+            source_repository=self.sources,
+            evidence_repository=self.evidences,
+            claim_repository=self.claims,
+            card_repository=self.cards,
+        )
 
     @classmethod
     def build(cls) -> 'AppContainer':

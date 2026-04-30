@@ -66,6 +66,11 @@ def test_end_to_end(tmp_path, monkeypatch):
     result = results[0]
     assert result.claims
     assert result.cards
+    assert isinstance(result.missing_topics, list)
+    assert result.source_coverage is not None
+    assert result.source_coverage.card_count == len(result.cards)
+    assert result.source_coverage.claim_count == len(result.claims)
+    assert result.source_coverage.source_sections
     assert all(evidence.evidence_quote for evidence in result.evidences)
     assert all(evidence.evidence_quote in evidence.content for evidence in result.evidences)
     answer = app.ask('AI Coding 中如何控制变更半径？')
@@ -88,6 +93,7 @@ def test_mock_ingest_generates_multiple_themed_cards_for_long_document(tmp_path,
     assert all(card.claim_ids and card.evidence_ids for card in result.cards)
     assert all(evidence.evidence_quote for evidence in result.evidences)
     claim_by_id = {claim.claim_id: claim for claim in result.claims}
+    evidence_by_id = {evidence.evidence_id: evidence for evidence in result.evidences}
     claim_sets = [frozenset(card.claim_ids) for card in result.cards]
     section_contexts = {
         context
@@ -101,3 +107,54 @@ def test_mock_ingest_generates_multiple_themed_cards_for_long_document(tmp_path,
         assert len(card.core_points) == len(card.claim_ids)
         assert [claim_by_id[claim_id].text for claim_id in card.claim_ids] == card.core_points
         assert all(claim_by_id[claim_id].evidence_ids for claim_id in card.claim_ids)
+        card_sections = {
+            _section_from_loc(evidence_by_id[evidence_id].loc)
+            for evidence_id in card.evidence_ids
+            if evidence_id in evidence_by_id
+        }
+        card_sections.discard(None)
+        assert len(card_sections) <= 1
+
+
+def test_mock_ingest_generates_code_development_card_type_for_code_source(tmp_path, monkeypatch):
+    monkeypatch.delenv('QWEN_API_KEY', raising=False)
+    monkeypatch.delenv('KNOWLEDGEAG_RUNTIME', raising=False)
+    write_files(tmp_path)
+    source_path = tmp_path / 'service.py'
+    source_path.write_text(
+        '''
+class AgentApp:
+    """Facade that keeps entry code thin."""
+    def ingest(self, path):
+        source = self.container.source_loader.load(path)
+        plan = self.container.read_planner.plan(source)
+        claims = self.container.claim_extractor.extract(plan)
+        cards = self.container.card_organizer.organize(claims)
+        return cards
+''',
+        encoding='utf-8',
+    )
+    monkeypatch.chdir(tmp_path)
+
+    result = AgentApp.create().ingest(source_path)[0]
+
+    assert result.cards
+    assert any(
+        card.card_type
+        in {
+            'project_context',
+            'module_card',
+            'entry_point_card',
+            'change_impact_card',
+            'decision_record',
+        }
+        for card in result.cards
+    )
+
+
+def _section_from_loc(loc: str) -> str | None:
+    for part in loc.split(';'):
+        part = part.strip()
+        if part.startswith('section='):
+            return part.removeprefix('section=').strip() or None
+    return None

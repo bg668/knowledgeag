@@ -8,6 +8,11 @@
 
 ---
 
+## 项目环境依赖
+
+使用uv管理python环境依赖
+
+
 ## 项目核心功能
 
 `knowledgeag` / `knowledgeag-card` 是一个以 `KnowledgeCard` 为中心的本地知识接入、检索和问答项目。
@@ -26,6 +31,11 @@ Source -> Evidence -> Claim -> KnowledgeCard -> Retrieval -> Validation -> Answe
 5. 在需要时回拉 Claim / Evidence / Source。
 6. 使用 mock 或 paimonsdk 调用 LLM。
 7. 提供 Rich TUI、ingest_demo.py、ask_demo.py 入口。
+8. 导入后输出关键主题覆盖校验结果 missing_topics，供人工检查。
+9. 导入后输出 Source 章节覆盖报告 source_coverage，供人工检查和 JSON 评估。
+10. 提供导入质量评估脚本，输出 card/claim/evidence 计数、绑定完整率、覆盖率、重复 source 数和引用精确率。
+11. 代码类 Source 支持代码开发知识卡片类型，用于表达项目地图、模块职责、入口、修改影响面和设计取舍。
+12. 金融知识支持金融知识卡片类型，用于区分事实数据、事件脉络、投资逻辑、操作规则和复盘验证。
 
 项目边界：
 knowledgeag-card 负责知识接入、组织、存储、检索、回源、问答上下文构造。
@@ -67,6 +77,8 @@ AgentApp.ingest
 -> ClaimValidator.validate
 -> CardOrganizer.organize
 -> CardValidator.validate
+-> TopicCoverageChecker.check
+-> SourceCoverageChecker.check
 -> Evidence / Claim / Card repositories save
 -> IngestResult
 
@@ -159,6 +171,7 @@ src/knowledgeag_card/runtime/tui_app.py
 src/knowledgeag_card/runtime/agent_app.py
 scripts/ingest_demo.py
 scripts/ask_demo.py
+scripts/evaluate_ingest_quality.py
 
 ### 配置装配
 
@@ -256,7 +269,7 @@ updated_at     更新时间
 ```text
 card_id               card_<uuid>
 title                 标题
-card_type             principle / method / pattern / sop / analysis / knowledge 等
+card_type             principle / method / pattern / sop / analysis / knowledge / project_context / module_card / entry_point_card / change_impact_card / decision_record / fact_card / event_card / thesis_card / strategy_card / review_card 等
 summary               摘要
 applicable_contexts   适用场景
 core_points           3-7 个核心点
@@ -278,6 +291,8 @@ ReadPlan          whole_document 或 structured。
 IngestResult      单次接入结果。
 RetrievedCard     检索命中的卡片及分数。
 ValidationResult  问答前上下文。
+TopicCoverageReport  导入后关键主题覆盖校验结果。
+SourceCoverageReport  导入后 Source 章节覆盖率报告。
 StorageStats      数据库统计。
 ```
 

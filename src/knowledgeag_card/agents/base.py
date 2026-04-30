@@ -37,6 +37,7 @@ class KnowledgeAgent(ABC):
         self,
         *,
         source_title: str,
+        source_type: str,
         claims: list[str],
         structure: list[str] | None = None,
         claim_sections: dict[str, str] | None = None,

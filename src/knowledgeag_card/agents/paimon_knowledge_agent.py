@@ -109,23 +109,36 @@ class PaimonKnowledgeAgent(KnowledgeAgent):
         self,
         *,
         source_title: str,
+        source_type: str,
         claims: list[str],
         structure: list[str] | None = None,
         claim_sections: dict[str, str] | None = None,
     ) -> list[dict]:
         payload = {
             'source_title': source_title,
+            'source_type': source_type,
             'structure': structure or [],
             'claims': [{'text': claim, 'section': (claim_sections or {}).get(claim)} for claim in claims],
         }
         prompt = (
             f"{self.config.prompts.card_organization}\n"
             "输出 JSON："
-            '{"cards": [{"title": "...", "card_type": "principle|method|pattern|sop|analysis|knowledge", '
+            '{"cards": [{"title": "...", "card_type": "principle|method|pattern|sop|analysis|knowledge|'
+            'project_context|module_card|entry_point_card|change_impact_card|decision_record|'
+            'fact_card|event_card|thesis_card|strategy_card|review_card", '
             '"summary": "...", "applicable_contexts": ["..."], "core_points": ["..."], '
             '"practice_rules": ["..."], "anti_patterns": ["..."], "tags": ["..."]}]}\n'
             "约束：优先按 structure 中的标题、章节、主题块组织主题卡；"
             "结构化长文不得只输出一张全文总览卡；总览卡可以存在，但不能替代章节/主题卡；"
+            "不要把多个 structure 标题下的 claims 合并成一张卡；"
+            "当 source_type=code 时，优先使用代码开发卡片类型："
+            "project_context 描述项目地图，module_card 描述模块输入输出和依赖，"
+            "entry_point_card 描述入口，change_impact_card 描述修改影响面，"
+            "decision_record 描述设计取舍；"
+            "当内容是金融知识时，可使用金融卡片类型："
+            "fact_card 只记录事实和数据，event_card 记录事件脉络，"
+            "thesis_card 记录投资逻辑，strategy_card 记录操作规则，"
+            "review_card 记录结果验证；"
             "每张卡只围绕一个明确主题，必须有 3-7 个 core_points；"
             "core_points 必须逐字来自输入 claims 的 text，不要改写，不要写成文档摘要段落；"
             "没有足够同主题 claims 的内容不要强行成卡。\n"
